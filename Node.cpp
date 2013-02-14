@@ -55,15 +55,15 @@ const float* Node::GetTransform()
 void Node::UpdateTransform()
 {
     glm::mat4 rotation;
-    glm::rotate(rotation, m_rot.x, glm::vec3(0.0, 0.0, 1.0));
-    glm::rotate(rotation, m_rot.y, glm::vec3(0.0, 1.0, 0.0));
-    glm::rotate(rotation, m_rot.z, glm::vec3(1.0, 0.0, 0.0));
+    rotation = glm::rotate(rotation, m_rot.x, glm::vec3(1.0, 0.0, 0.0));
+    rotation = glm::rotate(rotation, m_rot.y, glm::vec3(0.0, 1.0, 0.0));
+    rotation = glm::rotate(rotation, m_rot.z, glm::vec3(0.0, 0.0, 1.0));
 
     glm::mat4 translation;
-    glm::translate(translation, m_pos);
+    translation = glm::translate(translation, m_pos);
 
     glm::mat4 scaling;
-    glm::scale(scaling, m_scale);
+    scaling = glm::scale(scaling, m_scale);
 
     m_transform = translation*rotation*scaling;
 }

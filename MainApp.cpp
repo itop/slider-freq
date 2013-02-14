@@ -34,9 +34,9 @@ void MainApp::Init()
 {
     if(!m_pCamera) m_pCamera = new Camera();
     m_pCamera->SetFOV(45);
-    m_pCamera->SetDepthRange(0.1, 100.0);
+    m_pCamera->SetDepthRange(0.1, 1000.0);
     m_pCamera->SetAspectRatio(1.0);
-    m_pCamera->SetPosition(0, 0, -10);
+    m_pCamera->SetPosition(0, 0, -800);
     m_pCamera->SetTarget(0, 0, 0);
     m_pCamera->SetUp(0, 1, 0);
 	m_pCamera->Update();
@@ -64,17 +64,55 @@ void MainApp::Init()
     Mesh *pSquareMesh = new Mesh();
     pSquareMesh->SetVBOFromArray(squareVertices, 8);
     pSquareMesh->SetIBOFromArray(squareIndices, 4);
-
+    
     m_pSceneTree = new Node;
     m_pSceneTree->SetPosition(0,0,0);
+    m_pSceneTree->SetScale(100,100,1);
     m_pSceneTree->SetMesh(pSquareMesh);
+    m_pSceneTree->UpdateTransform();
 }  
+
+void MainApp::OnMouseDown(float x, float y, MOUSE_BUTTON btn)
+{
+    if(m_pSceneTree) 
+    {
+        m_pSceneTree->SetRotation(0,0,-30);
+        m_pSceneTree->UpdateTransform();
+    }
+}
+
+void MainApp::OnMouseUp(float x, float y, MOUSE_BUTTON btn)
+{
+    if(m_pSceneTree) 
+    {
+        m_pSceneTree->SetRotation(0,0,30);
+        m_pSceneTree->UpdateTransform();
+    }
+}
+
+void MainApp::OnMouseMove(float x, float y)
+{
+    if(m_pSceneTree) 
+    {
+        m_pSceneTree->SetRotation(x,y,0);
+        m_pSceneTree->UpdateTransform();
+    }
+}
 
 void MainApp::OnResize(float width, float height)
 {
-    m_pRenderer->SetViewport(0,0,width,height);
-    m_pCamera->SetAspectRatio(width/height);
-    m_pCamera->Update();
+    float aspect = (float)width/height;
+
+    if(m_pRenderer)
+    {
+        m_pRenderer->SetViewport(0,0,width,height);
+    }
+
+    if(m_pCamera)
+    {
+        m_pCamera->SetAspectRatio(aspect);
+        m_pCamera->Update();
+    }
 }
 
 void MainApp::Update()

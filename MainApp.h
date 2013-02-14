@@ -10,6 +10,12 @@ class Renderer;
 class MainApp 
 {
 public:
+    enum MOUSE_BUTTON {
+        MOUSE_LEFT,
+        MOUSE_MIDDLE,
+        MOUSE_RIGHT
+    };
+
     MainApp();
     ~MainApp();
 
@@ -22,14 +28,16 @@ public:
     //Shut down the application
     void ShutDown();
 
+    //Events
+    void OnMouseMove(float x, float y);
+    void OnMouseDown(float x, float y, MOUSE_BUTTON btn);
+    void OnMouseUp(float x, float y, MOUSE_BUTTON btn);
     void OnResize(float width, float height);
 
 private:
     Camera *m_pCamera;
     Node *m_pSceneTree;
     Renderer *m_pRenderer;
-    float m_width;
-    float m_height;
 };
 
 #endif

@@ -6,6 +6,62 @@
 #define WINDOW_WIDTH  800
 #define WINDOW_HEIGHT 800
 
+MainApp app;
+int mouse_x, mouse_y;
+
+void GLFWCALL resize(int w, int h)
+{
+    app.OnResize(w,h);
+}
+
+void GLFWCALL mousepos(int x, int y)
+{
+    mouse_x = x;
+    mouse_y = y;
+    app.OnMouseMove(x, y);
+}
+
+void GLFWCALL mousebutton(int button, int action)
+{
+    switch(action)
+    {
+    case GLFW_PRESS:
+        if(button == GLFW_MOUSE_BUTTON_LEFT)
+        {
+            app.OnMouseDown(mouse_x, mouse_y, MainApp::MOUSE_LEFT);
+        }
+
+        if(button == GLFW_MOUSE_BUTTON_RIGHT)
+        {
+            app.OnMouseDown(mouse_x, mouse_y, MainApp::MOUSE_RIGHT);
+        }
+
+        if(button == GLFW_MOUSE_BUTTON_MIDDLE)
+        {
+            app.OnMouseDown(mouse_x, mouse_y, MainApp::MOUSE_MIDDLE);
+        }
+        
+        break;
+    case GLFW_RELEASE:
+        if(button == GLFW_MOUSE_BUTTON_LEFT)
+        {
+            app.OnMouseUp(mouse_x, mouse_y, MainApp::MOUSE_LEFT);
+        }
+
+        if(button == GLFW_MOUSE_BUTTON_RIGHT)
+        {
+            app.OnMouseUp(mouse_x, mouse_y, MainApp::MOUSE_RIGHT);
+        }
+
+        if(button == GLFW_MOUSE_BUTTON_MIDDLE)
+        {
+            app.OnMouseUp(mouse_x, mouse_y, MainApp::MOUSE_MIDDLE);
+        }
+
+        break;
+    }
+}
+
 int main(int argc, char *argv[])
 {
 	if(!glfwInit())
@@ -24,8 +80,10 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    //Instance of the main app
-    MainApp app;
+    //Callbacks
+    glfwSetWindowSizeCallback(resize);
+    glfwSetMouseButtonCallback(mousebutton);
+    glfwSetMousePosCallback(mousepos);
 
     app.Init();
     app.OnResize(WINDOW_WIDTH, WINDOW_HEIGHT);
