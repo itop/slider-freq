@@ -7,6 +7,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/matrix_operation.hpp>
 
+class Mesh;
+
 class Node {
 public:
     Node();
@@ -14,6 +16,7 @@ public:
     void SetPosition(glm::vec3 pos);
     void SetPosition(float x, float y, float z);
 
+    void SetMesh(Mesh *pMesh);
     
     void SetRotation(glm::vec3 rot);
     void SetRotation(float x, float y, float z);
@@ -24,21 +27,15 @@ public:
     void UpdateTransform();
 
 	const float *GetTransform();
-
-    void SetIBO(GLuint ibo);
-    void SetVBO(GLuint vbo);
-
-    GLuint GetVBO();
-    GLuint GetIBO();
+    const Mesh *GetMesh();
 
 private:
+    Mesh *m_pMesh;
+
     glm::vec3 m_pos;
     glm::vec3 m_rot;
     glm::vec3 m_scale;
     glm::mat4 m_transform;
-
-    GLuint m_uVBOId;
-    GLuint m_uIBOId;
 };
 
 #endif

@@ -1,13 +1,9 @@
-#include <GL/glew.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/matrix_operation.hpp>
-
 #include "MainApp.h"
 #include "Camera.h"
 #include "Node.h"
 #include "ShaderProgram.h"
 #include "Renderer.h"
+#include "Mesh.h"
 
 const char vertexShader[] = 
     "uniform mat4 projection;                           \n"
@@ -64,18 +60,14 @@ void MainApp::Init()
                                  0.5,  0.5,
                                  0.5, -0.5};
     GLuint squareIndices[4] = {0, 1, 3, 2};
-    glGenBuffers(1, &squareVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, squareVBO);
-    glBufferData(GL_ARRAY_BUFFER, 32, squareVertices, GL_STATIC_DRAW);
 
-    glGenBuffers(1, &squareIBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, squareIBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 16, squareIndices, GL_STATIC_DRAW);
+    Mesh *pSquareMesh = new Mesh();
+    pSquareMesh->SetVBOFromArray(squareVertices, 8);
+    pSquareMesh->SetIBOFromArray(squareIndices, 4);
 
     m_pSceneTree = new Node;
     m_pSceneTree->SetPosition(0,0,0);
-    m_pSceneTree->SetIBO(squareIBO);
-    m_pSceneTree->SetVBO(squareVBO);
+    m_pSceneTree->SetMesh(pSquareMesh);
 }  
 
 void MainApp::OnResize(float width, float height)

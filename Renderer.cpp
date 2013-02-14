@@ -2,6 +2,7 @@
 #include "ShaderProgram.h"
 #include "Camera.h"
 #include "Node.h"
+#include "Mesh.h"
 
 #include <GL/glew.h>
 #include <vector>
@@ -55,6 +56,14 @@ void Renderer::Render(Node *pNode)
         Per-node set-up
     */
 
+    const Mesh *pMesh = pNode->GetMesh();
+
+    //Nothing to render
+    if(!pMesh)
+    {
+        return;
+    }
+
     //Model matrix
     glUniformMatrix4fv(m_pActiveShader->GetModelMatrixLocation(), 1, GL_FALSE, pNode->GetTransform());
 
@@ -63,8 +72,8 @@ void Renderer::Render(Node *pNode)
     glVertexAttribPointer(m_pActiveShader->GetPositionLocation(), 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
 
     //Vertex buffer objects
-    glBindBuffer(GL_ARRAY_BUFFER, pNode->GetVBO());
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pNode->GetIBO());
+    glBindBuffer(GL_ARRAY_BUFFER, pMesh->GetVBO());
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pMesh->GetIBO());
 
     glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_INT, (GLvoid*)0);
 }

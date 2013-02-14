@@ -68,22 +68,12 @@ void Node::UpdateTransform()
     m_transform = translation*rotation*scaling;
 }
 
-void Node::SetIBO(GLuint ibo)
+const Mesh *Node::GetMesh()
 {
-    m_uIBOId = ibo;
+    return m_pMesh;
 }
 
-void Node::SetVBO(GLuint vbo)
+void Node::SetMesh(Mesh *pMesh)
 {
-    m_uVBOId = vbo;
-}
-
-GLuint Node::GetIBO()
-{
-    return m_uIBOId;
-}
-
-GLuint Node::GetVBO()
-{
-    return m_uVBOId;
+    m_pMesh = pMesh;
 }
