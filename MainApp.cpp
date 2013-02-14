@@ -7,6 +7,7 @@
 #include "Camera.h"
 #include "Node.h"
 #include "ShaderProgram.h"
+#include "Renderer.h"
 
 const char vertexShader[] = 
     "uniform mat4 projection;                           \n"
@@ -26,30 +27,34 @@ MainApp::MainApp()
 {
     m_pCamera = NULL;
     m_pSceneTree = NULL;
-    m_pShader = NULL;
+    m_pRenderer = NULL;
+}
+
+MainApp::~MainApp()
+{
 }
 
 void MainApp::Init()
 {
-    glClearColor(0.0,0.0,0.0,1.0); 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_SRC_ALPHA);
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-
     if(!m_pCamera) m_pCamera = new Camera();
-    m_pCamera->SetPosition(glm::vec3(0.0, 0.0, -10.0));
-    m_pCamera->SetTarget(glm::vec3(0.0, 0.0, 0.0));
-    m_pCamera->SetUp(glm::vec3(0.0, 1.0, 0.0));
+    m_pCamera->SetFOV(45);
+    m_pCamera->SetDepthRange(0.1, 100.0);
+    m_pCamera->SetAspectRatio(1.0);
+    m_pCamera->SetPosition(0, 0, -10);
+    m_pCamera->SetTarget(0, 0, 0);
+    m_pCamera->SetUp(0, 1, 0);
 	m_pCamera->Update();
 
-    if(!m_pShader) m_pShader = new ShaderProgram();
-    m_pShader->Create();
-    m_pShader->CompileFragmentShaderFromSource(fragmentShader);
-    m_pShader->CompileVertexShaderFromSource(vertexShader);
-    m_pShader->Link();
-    m_pShader->Use();
+    ShaderProgram *pShader = new ShaderProgram();
+    pShader->Create();
+    pShader->CompileFragmentShaderFromSource(fragmentShader);
+    pShader->CompileVertexShaderFromSource(vertexShader);
+    pShader->Link();
+    pShader->Use();
+
+    m_pRenderer = new Renderer();
+    m_pRenderer->SetCamera(m_pCamera);
+    m_pRenderer->SetShader(pShader);
 
     //Initialize a square object
     GLuint squareVBO, squareIBO;
@@ -68,38 +73,33 @@ void MainApp::Init()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 16, squareIndices, GL_STATIC_DRAW);
 
     m_pSceneTree = new Node;
-    m_pSceneTree->SetPosition(glm::vec3(0.0, 0.0, 0.0));
+    m_pSceneTree->SetPosition(0,0,0);
     m_pSceneTree->SetIBO(squareIBO);
     m_pSceneTree->SetVBO(squareVBO);
 }  
 
 void MainApp::OnResize(float width, float height)
 {
-    glUniformMatrix4fv(m_pShader->GetProjectionMatrixLocation(), 1, GL_FALSE, &glm::perspective(45.0f, m_width/m_height, 0.1f, 100.0f)[0][0]);
-    glViewport(0, 0, width, height);
+    m_pRenderer->SetViewport(0,0,width,height);
+    m_pCamera->SetAspectRatio(width/height);
+    m_pCamera->Update();
 }
 
 void MainApp::Update()
-{
-    //Clear the existing screen data
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-    GLuint indices = m_pSceneTree->GetIBO();
-    GLuint vertices = m_pSceneTree->GetVBO();
-
-    glUniformMatrix4fv(m_pShader->GetViewMatrixLocation(), 1, GL_FALSE, &m_pCamera->GetMatrix()[0][0]);
-    GLfloat identity[16] = {1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0};
-	glUniformMatrix4fv(m_pShader->GetModelMatrixLocation(), 1, GL_FALSE, &m_pSceneTree->GetTransform()[0][0]);
-
-    glEnableVertexAttribArray(m_pShader->GetPositionLocation());
-    glVertexAttribPointer(m_pShader->GetPositionLocation(), 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vertices);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
-    glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_INT, (GLvoid*)0);
+{   
+    std::vector<Node*> drawList;
+    drawList.push_back(m_pSceneTree);
+    m_pRenderer->Render(drawList);
 }
 
 void MainApp::ShutDown()
 {
     //Clean up allocated memory
+    if(m_pCamera) delete m_pCamera;
+    if(m_pSceneTree) delete m_pSceneTree;
+    if(m_pRenderer) delete m_pRenderer;
+
+    m_pCamera = NULL;
+    m_pSceneTree = NULL;
+    m_pRenderer = NULL;
 }

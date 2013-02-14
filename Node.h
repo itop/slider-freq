@@ -12,11 +12,18 @@ public:
     Node();
 
     void SetPosition(glm::vec3 pos);
+    void SetPosition(float x, float y, float z);
+
+    
     void SetRotation(glm::vec3 rot);
+    void SetRotation(float x, float y, float z);
+
     void SetScale(glm::vec3 scale);
+    void SetScale(float x, float y, float z);
+
     void UpdateTransform();
 
-	glm::mat4 GetTransform();
+	const float *GetTransform();
 
     void SetIBO(GLuint ibo);
     void SetVBO(GLuint vbo);

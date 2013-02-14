@@ -13,10 +13,8 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-	bool done=false;
-
     //Create GL context
-    glfwOpenWindow(WINDOW_WIDTH, WINDOW_HEIGHT, 8, 8, 8, 8, 8, 8, GLFW_WINDOW_NO_RESIZE);
+    glfwOpenWindow(WINDOW_WIDTH, WINDOW_HEIGHT, 8, 8, 8, 8, 8, 8, GLFW_WINDOW);
 
     //Initialize GLEW
     GLenum err = glewInit();
@@ -34,7 +32,14 @@ int main(int argc, char *argv[])
 
 	while(1) {
         if(glfwGetKey(GLFW_KEY_ESC)) break;
+
+        //Clear the existing screen data
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        //Update app logic
 		app.Update();
+
+        //Flip the screen buffer
         glfwSwapBuffers();
 	}
 

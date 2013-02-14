@@ -4,12 +4,14 @@
 class Camera;
 class Node;
 class ShaderProgram;
+class Renderer;
 
 //Encapsulates the application data
 class MainApp 
 {
 public:
     MainApp();
+    ~MainApp();
 
     //Initialize the application data
     void Init();
@@ -25,7 +27,7 @@ public:
 private:
     Camera *m_pCamera;
     Node *m_pSceneTree;
-    ShaderProgram *m_pShader;
+    Renderer *m_pRenderer;
     float m_width;
     float m_height;
 };

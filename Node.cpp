@@ -22,9 +22,19 @@ void Node::SetPosition(glm::vec3 pos)
     m_pos = pos;
 }
 
+void Node::SetPosition(float x, float y, float z)
+{
+    m_pos = glm::vec3(x,y,z);
+}
+
 void Node::SetRotation(glm::vec3 rot)
 {
     m_rot = rot;
+}
+
+void Node::SetRotation(float x, float y, float z)
+{
+    m_rot = glm::vec3(x,y,z);
 }
 
 void Node::SetScale(glm::vec3 scale)
@@ -32,9 +42,14 @@ void Node::SetScale(glm::vec3 scale)
     m_scale = scale;
 }
 
-glm::mat4 Node::GetTransform()
+void Node::SetScale(float x, float y, float z)
 {
-	return m_transform;
+    m_scale = glm::vec3(x,y,z);
+}
+
+const float* Node::GetTransform()
+{
+	return &m_transform[0][0];
 }
 
 void Node::UpdateTransform()
