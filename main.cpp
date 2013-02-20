@@ -1,7 +1,12 @@
 #include <GL/glew.h>
 #include <GL/glfw.h>
 
+#include <memory>
+
 #include "MainApp.h"
+
+//TEMP
+#include "SoundGenerator.h"
 
 #define WINDOW_WIDTH  800
 #define WINDOW_HEIGHT 800
@@ -68,6 +73,11 @@ int main(int argc, char *argv[])
     {
         return -1;
     }
+
+    int test = 0x00000001;
+    char test2 = 0;
+
+    memcpy(&test2, &test, 1);
 
     //Create GL context
     glfwOpenWindow(WINDOW_WIDTH, WINDOW_HEIGHT, 8, 8, 8, 8, 8, 8, GLFW_WINDOW);

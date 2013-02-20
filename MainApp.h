@@ -5,6 +5,7 @@ class Camera;
 class Node;
 class ShaderProgram;
 class Renderer;
+class SoundGenerator;
 
 //Encapsulates the application data
 class MainApp 
@@ -38,6 +39,7 @@ private:
     Camera *m_pCamera;
     Node *m_pSceneTree;
     Renderer *m_pRenderer;
+    SoundGenerator *m_pSoundGen;
 };
 
 #endif

@@ -4,6 +4,7 @@
 #include "ShaderProgram.h"
 #include "Renderer.h"
 #include "Mesh.h"
+#include "SoundGenerator.h"
 
 const char vertexShader[] = 
     "uniform mat4 projection;                           \n"
@@ -41,6 +42,7 @@ void MainApp::Init()
     m_pCamera->SetUp(0, 1, 0);
 	m_pCamera->Update();
 
+    //Will leak if Init is called multiple times
     ShaderProgram *pShader = new ShaderProgram();
     pShader->Create();
     pShader->CompileFragmentShaderFromSource(fragmentShader);
@@ -48,7 +50,7 @@ void MainApp::Init()
     pShader->Link();
     pShader->Use();
 
-    m_pRenderer = new Renderer();
+    if(!m_pRenderer) m_pRenderer = new Renderer();
     m_pRenderer->SetCamera(m_pCamera);
     m_pRenderer->SetShader(pShader);
 
@@ -61,15 +63,22 @@ void MainApp::Init()
                                  0.5, -0.5};
     GLuint squareIndices[4] = {0, 1, 3, 2};
 
+    //Will leak if Init is called multiple times
     Mesh *pSquareMesh = new Mesh();
     pSquareMesh->SetVBOFromArray(squareVertices, 8);
     pSquareMesh->SetIBOFromArray(squareIndices, 4);
     
-    m_pSceneTree = new Node;
+    if(!m_pSceneTree) m_pSceneTree = new Node;
     m_pSceneTree->SetPosition(0,0,0);
     m_pSceneTree->SetScale(100,100,1);
     m_pSceneTree->SetMesh(pSquareMesh);
     m_pSceneTree->UpdateTransform();
+
+    //Initialize sound generator
+    if(!m_pSoundGen) m_pSoundGen = new SoundGenerator();
+
+    m_pSoundGen->Format(44100, 16);
+    m_pSoundGen->PrepareDevice();
 }  
 
 void MainApp::OnMouseDown(float x, float y, MOUSE_BUTTON btn)
@@ -96,6 +105,12 @@ void MainApp::OnMouseMove(float x, float y)
     {
         m_pSceneTree->SetRotation(x,y,0);
         m_pSceneTree->UpdateTransform();
+    }
+
+    if(m_pSoundGen)
+    {
+        m_pSoundGen->FillBuffer(x, 1.0);
+        m_pSoundGen->Play();
     }
 }
 
@@ -128,6 +143,12 @@ void MainApp::ShutDown()
     if(m_pCamera) delete m_pCamera;
     if(m_pSceneTree) delete m_pSceneTree;
     if(m_pRenderer) delete m_pRenderer;
+    if(m_pSoundGen)
+    {
+        m_pSoundGen->Stop();
+        m_pSoundGen->CloseDevice();
+        delete m_pSoundGen;
+    }
 
     m_pCamera = NULL;
     m_pSceneTree = NULL;
