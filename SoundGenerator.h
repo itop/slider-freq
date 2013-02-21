@@ -15,12 +15,14 @@ public:
     void FillBuffer(int freq, float amp);
     bool Play();
     bool Stop();
+    const float *GetWave();
 
 private:
     HWAVEOUT m_hDeviceHandle;
     WAVEFORMATEX m_waveFormat;
     WAVEHDR m_waveHeader;
     unsigned char *m_pBuf;
+    float *m_pWave;
 };
 
 #endif

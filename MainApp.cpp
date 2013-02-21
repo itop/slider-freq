@@ -83,30 +83,14 @@ void MainApp::Init()
 
 void MainApp::OnMouseDown(float x, float y, MOUSE_BUTTON btn)
 {
-    if(m_pSceneTree) 
-    {
-        m_pSceneTree->SetRotation(0,0,-30);
-        m_pSceneTree->UpdateTransform();
-    }
 }
 
 void MainApp::OnMouseUp(float x, float y, MOUSE_BUTTON btn)
 {
-    if(m_pSceneTree) 
-    {
-        m_pSceneTree->SetRotation(0,0,30);
-        m_pSceneTree->UpdateTransform();
-    }
 }
 
 void MainApp::OnMouseMove(float x, float y)
 {
-    if(m_pSceneTree) 
-    {
-        m_pSceneTree->SetRotation(x,y,0);
-        m_pSceneTree->UpdateTransform();
-    }
-
     if(m_pSoundGen)
     {
         m_pSoundGen->FillBuffer(x, 1.0);
@@ -134,6 +118,11 @@ void MainApp::Update()
 {   
     std::vector<Node*> drawList;
     drawList.push_back(m_pSceneTree);
+
+    static int c = 0;
+    m_pSceneTree->SetPosition(0, 100 * m_pSoundGen->GetWave()[c+=10 % 44100], 0);
+    m_pSceneTree->UpdateTransform();
+
     m_pRenderer->Render(drawList);
 }
 
