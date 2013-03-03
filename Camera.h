@@ -24,8 +24,8 @@ public:
     void SetDepthRange(float nearPlane, float farPlane);
     void SetAspectRatio(float aspect);
 
-    const float* GetViewMatrix();
-    const float* GetProjectionMatrix();
+    const float* GetViewMatrix() const;
+    const float* GetProjectionMatrix() const;
 
     void Update();
 

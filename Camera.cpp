@@ -70,12 +70,12 @@ void Camera::Update()
     m_projectionMatrix = glm::perspective(m_fov, m_aspect, m_nearPlane, m_farPlane);
 }
 
-const float *Camera::GetViewMatrix()
+const float *Camera::GetViewMatrix() const
 {
     return &m_viewMatrix[0][0];
 }
 
-const float *Camera::GetProjectionMatrix()
+const float *Camera::GetProjectionMatrix() const
 {
     return &m_projectionMatrix[0][0];
 }

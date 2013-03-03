@@ -38,6 +38,9 @@ public:
     void OnResize(float width, float height);
 
 private:
+    float m_winW;
+    float m_winH;
+
     Camera *m_pCamera;
     Node *m_pSceneTree;
     Renderer *m_pRenderer;

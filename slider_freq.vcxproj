@@ -84,6 +84,7 @@
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="ShaderProgram.h" />
     <ClInclude Include="SoundGenerator.h" />
+    <ClInclude Include="TransformUtilities.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
@@ -94,6 +95,7 @@
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
     <ClCompile Include="SoundGenerator.cpp" />
+    <ClCompile Include="TransformUtilities.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

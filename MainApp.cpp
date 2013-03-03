@@ -5,12 +5,7 @@
 #include "Renderer.h"
 #include "Mesh.h"
 #include "SoundGenerator.h"
-
-#include <GL/glew.h>
-#include <GL/gl.h> 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/matrix_operation.hpp>
+#include "TransformUtilities.h"
 
 const char vertexShader[] = 
     "uniform mat4 projection;                           \n"
@@ -104,37 +99,31 @@ void MainApp::OnMouseMove(float x, float y)
 {
     if(m_pSceneTree)
     {
-        /*
-            To get the square to stay under the mouse, we must first project the origin of our world into the screen in order to get the screen z coordinate
-            that corresponds to world z = 0
+        //In order to get the mouse's fake Z coordinate, we will use the Z coordinate of 
+        //the origin in screen space
+        static const float originWX = 0.0;
+        static const float originWY = 0.0;
+        static const float originWZ = 0.0;
+        float originSX, originSY, originSZ;
 
-            Then we take the vector mouseX mouseY originZ and unproject it into the world to get our world coordinates for the mouse. We're using originZ because
-            the mouse doesn't provide a z coordinate, and we are deciding that the square should stay on the plane z = 0;
-        */
+        //Origin world -> Screen coordinates
+        WorldToScreen(originWX, originWY, originWZ, m_pCamera, m_winW, m_winH, originSX, originSY, originSZ);
 
-        //Take the projection matrix
-        const float *mat = m_pCamera->GetProjectionMatrix();
-        glm::mat4 projectionMatrix = glm::mat4(mat[0], mat[1], mat[2], mat[3], mat[4], mat[5], mat[6], mat[7], mat[8], mat[9], mat[10], mat[11], mat[12], mat[13], mat[14], mat[15]);
-        mat = m_pCamera->GetViewMatrix();
-        glm::mat4 viewMatrix = glm::mat4(mat[0], mat[1], mat[2], mat[3], mat[4], mat[5], mat[6], mat[7], mat[8], mat[9], mat[10], mat[11], mat[12], mat[13], mat[14], mat[15]);
+        //Mouse screen -> world coordinates
+        float mouseWX, mouseWY, mouseWZ;
+        ScreenToWorld(x, m_winH - y, originSZ, m_pCamera, m_winW, m_winH, mouseWX, mouseWY, mouseWZ);
 
-        glm::vec3 origin = glm::vec3(0,0,0);
-        glm::vec4 viewport(0.0, 0.0, 800.0, 800.0);
-        glm::vec3 screenOrigin = glm::project(origin, viewMatrix, projectionMatrix, viewport);
-        
-        //Mouse position in screen space
-        glm::vec3 mouse = glm::vec3(x, 800 - y, screenOrigin.z);
-
-        glm::vec3 mouseInWorld = glm::unProject(mouse, viewMatrix, projectionMatrix, viewport);
-        
-        m_pSceneTree->SetPosition(mouseInWorld.x, mouseInWorld.y, mouseInWorld.z);
+        m_pSceneTree->SetPosition(mouseWX, mouseWY, mouseWZ);
         m_pSceneTree->UpdateTransform();
     }
 }
 
 void MainApp::OnResize(float width, float height)
 {
-    float aspect = (float)width/height;
+    m_winW = width;
+    m_winH = height;
+
+    float aspect = m_winW/m_winH;
 
     if(m_pRenderer)
     {
