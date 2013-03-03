@@ -1,11 +1,7 @@
 #ifndef NODE_H
 #define NODE_H
 
-#include <GL/glew.h>
-#include <GL/gl.h> 
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/matrix_operation.hpp>
 #include <vector>
 
 //Forward declaration

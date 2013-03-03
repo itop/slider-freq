@@ -4,24 +4,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/matrix_operation.hpp>
-#include <vector>
-
-/*
-        //Take the projection matrix
-        const float *mat = m_pCamera->GetProjectionMatrix();
-        glm::mat4 projectionMatrix = glm::mat4(mat[0], mat[1], mat[2], mat[3], mat[4], mat[5], mat[6], mat[7], mat[8], mat[9], mat[10], mat[11], mat[12], mat[13], mat[14], mat[15]);
-        mat = m_pCamera->GetViewMatrix();
-        glm::mat4 viewMatrix = glm::mat4(mat[0], mat[1], mat[2], mat[3], mat[4], mat[5], mat[6], mat[7], mat[8], mat[9], mat[10], mat[11], mat[12], mat[13], mat[14], mat[15]);
-
-        glm::vec3 origin = glm::vec3(0,0,0);
-        glm::vec4 viewport(0.0, 0.0, 800.0, 800.0);
-        glm::vec3 screenOrigin = glm::project(origin, viewMatrix, projectionMatrix, viewport);
-        
-        //Mouse position in screen space
-        glm::vec3 mouse = glm::vec3(x, 800 - y, screenOrigin.z);
-
-        glm::vec3 mouseInWorld = glm::unProject(mouse, viewMatrix, projectionMatrix, viewport);
-*/
 
 void WorldToScreen(const float &worldX, const float &worldY, const float &worldZ, const Camera *pCamera, const float screenW, const float screenH, float &screenX, float &screenY, float &screenZ)
 {  
