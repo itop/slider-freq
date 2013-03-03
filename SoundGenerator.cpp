@@ -61,7 +61,7 @@ bool SoundGenerator::PrepareDevice()
     }
 
     m_waveHeader.dwFlags=WHDR_BEGINLOOP|WHDR_ENDLOOP|WHDR_PREPARED;
-    m_waveHeader.dwLoops=0xFFFFFFFF; //Lots of loops
+    m_waveHeader.dwLoops = 1;//0xFFFFFFFF; //Lots of loops
     
     //Everything was ok
     return true;
@@ -80,17 +80,46 @@ bool SoundGenerator::CloseDevice()
     }
 }
 
+/*
+so, y is the output waveform. 
+as all wavesforms, it's a function 
+of time y(t). t is the time, 
+measured in seconds, 
+and sampled at 44100 hertz. 
+w is a variable that takes a 
+different numerical value depending 
+which key/note you are playing. it's 
+measured in radians, so for example, 
+when you play the note A, which in 
+standard instruments is tuned 
+ti 440 Hertz, w takes the value 2*PI*440.
+*/
+
 void SoundGenerator::FillBuffer(int freq, float amp)
 {
-    float x = freq*3.1415935/m_waveFormat.nSamplesPerSec;
+    float x = freq*3.14159265; //Corresponds to "w"
     int sample = 0;
     int maxVal = pow(2.0f,m_waveFormat.wBitsPerSample) - 1;
     int sampleNum = 0;
     for(unsigned int i = 0; i < m_waveHeader.dwBufferLength; i+=m_waveFormat.nBlockAlign)
     {
-        m_pWave[sampleNum] = cos(x*i)*amp;
+        float t = (float)i/m_waveHeader.dwBufferLength; //Our buffer length just happens to be a second long, so this is our time in seconds
+        float y;
+
+        //"Piano" by iq
+        y  = 0.6*sin(1.0*x*t)*exp(-0.0008*x*t);
+        y += 0.3*sin(2.0*x*t)*exp(-0.0010*x*t);
+        y += 0.1*sin(4.0*x*t)*exp(-0.0015*x*t);
+        y += 0.2*y*y*y;
+        y *= 0.9 + 0.1*cos(70.0*t);
+        y  = 2.0*y*exp(-22.0*t) + y;
+
+        y = y > 1.0 ? 1.0 : y;
+        y = y < 0.0 ? 0.0 : y;
+
+        m_pWave[sampleNum] = y*amp;
         //We fill sample with an integer of amplitude appropriate to the bytes per sample
-        sample = m_pWave[sampleNum] * maxVal/2;
+        sample = m_pWave[sampleNum] * maxVal/2.0;
         memcpy(&m_pBuf[i], &sample, m_waveFormat.nBlockAlign);
         ++sampleNum;
     }

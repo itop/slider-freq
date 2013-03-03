@@ -83,6 +83,11 @@ void MainApp::Init()
 
 void MainApp::OnMouseDown(float x, float y, MOUSE_BUTTON btn)
 {
+    if(m_pSoundGen)
+    {
+        m_pSoundGen->FillBuffer(x, 1.0);
+        m_pSoundGen->Play();
+    }
 }
 
 void MainApp::OnMouseUp(float x, float y, MOUSE_BUTTON btn)
@@ -91,11 +96,7 @@ void MainApp::OnMouseUp(float x, float y, MOUSE_BUTTON btn)
 
 void MainApp::OnMouseMove(float x, float y)
 {
-    if(m_pSoundGen)
-    {
-        m_pSoundGen->FillBuffer(x, 1.0);
-        m_pSoundGen->Play();
-    }
+
 }
 
 void MainApp::OnResize(float width, float height)
