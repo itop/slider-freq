@@ -114,6 +114,7 @@ void SoundGenerator::FillBuffer(int freq, float amp)
         y *= 0.9 + 0.1*cos(70.0*t);
         y  = 2.0*y*exp(-22.0*t) + y;
 
+        //Clamp y to 0..1
         y = y > 1.0 ? 1.0 : y;
         y = y < 0.0 ? 0.0 : y;
 

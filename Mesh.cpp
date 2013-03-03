@@ -32,17 +32,6 @@ void Mesh::SetIBOFromArray(unsigned int *pData, unsigned int count)
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, count*sizeof(unsigned int), pData, GL_STATIC_DRAW);
 }
 
-void Mesh::SetTextureFromArray(float *pData, unsigned int length)
-{
-    if(!m_texId)
-    {
-        glGenTextures(1, &m_texId);
-    }
-
-    glBindTexture(GL_TEXTURE_1D, m_texId);
-    glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, length, 0, GL_RGBA, GL_FLOAT, pData);
-}
-
 void Mesh::SetIBO(GLuint ibo)
 {
     m_iboId = ibo;
@@ -53,11 +42,6 @@ void Mesh::SetVBO(GLuint vbo)
     m_vboId = vbo;
 }
 
-void Mesh::SetTexture(GLuint tex)
-{
-    m_texId = tex;
-}
-
 GLuint Mesh::GetIBO() const
 {
     return m_iboId;
@@ -66,9 +50,4 @@ GLuint Mesh::GetIBO() const
 GLuint Mesh::GetVBO() const
 {
     return m_vboId;
-}
-
-GLuint Mesh::GetTex() const
-{
-    return m_texId;
 }

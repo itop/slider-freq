@@ -74,11 +74,6 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    int test = 0x00000001;
-    char test2 = 0;
-
-    memcpy(&test2, &test, 1);
-
     //Create GL context
     glfwOpenWindow(WINDOW_WIDTH, WINDOW_HEIGHT, 8, 8, 8, 8, 8, 8, GLFW_WINDOW);
 

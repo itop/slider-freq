@@ -1,6 +1,8 @@
 #ifndef MAINAPP_H
 #define MAINAPP_H
 
+#include <vector>
+
 class Camera;
 class Node;
 class ShaderProgram;
@@ -40,6 +42,7 @@ private:
     Node *m_pSceneTree;
     Renderer *m_pRenderer;
     SoundGenerator *m_pSoundGen;
+    std::vector<Node*> drawList;
 };
 
 #endif
