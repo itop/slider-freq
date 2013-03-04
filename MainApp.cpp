@@ -9,6 +9,16 @@
 
 #include "Slider.h"
 
+#include <vector>
+#include <map>
+
+//Uncomment this to see the FPS in the console output
+//#define PRINT_FPS
+
+#ifdef PRINT_FPS
+#include <stdio.h>
+#endif
+
 const char vertexShader[] = 
     "uniform mat4 projection;                           \n"
     "uniform mat4 view;                                 \n"
@@ -29,6 +39,8 @@ MainApp::MainApp()
     m_pCamera = NULL;
     m_pSceneTree = NULL;
     m_pRenderer = NULL;
+    m_fVolume = 0.0;
+    m_fFrequency = 0.0;
 }
 
 MainApp::~MainApp()
@@ -102,21 +114,31 @@ void MainApp::Init()
     pSliderKnobMesh->SetAABB(AABB(0.0, 0.0, 0.0, 80.0, 40.0, 10.0));
     
     if(!m_pSceneTree) m_pSceneTree = new Node;
-    if(!m_pSlider) m_pSlider = new Slider(this);
+    if(!m_pFreqSlider) m_pFreqSlider = new Slider(this);
+    if(!m_pVolSlider) m_pVolSlider = new Slider(this);
 
     //Build the tree structure
-    m_pSceneTree->AddChild(m_pSlider);
+    m_pSceneTree->AddChild(m_pFreqSlider);
+    m_pSceneTree->AddChild(m_pVolSlider);
 
     //Set up the nodes
-    m_pSlider->SetPosition(250,0,0);
-    m_pSlider->SetRotation(0.0,-45.0, 0.0);
-    m_pSlider->SetScale(1.0, 1.0, 1.0);
-    m_pSlider->SetMesh(pSliderMesh);
-    m_pSlider->SetKnobMesh(pSliderKnobMesh);
-    m_pSlider->SetKnobColor(0.5,0.5,0.2);
-    m_pSlider->SetRange(400, 1200);
-    m_pSlider->SetColor(0.2,0.2,0.5);
-    m_pSlider->SetOpacity(1.0);
+    m_pFreqSlider->SetPosition(250,0,0);
+    m_pFreqSlider->SetRotation(0.0,-45.0, 0.0);
+    m_pFreqSlider->SetMesh(pSliderMesh);
+    m_pFreqSlider->SetKnobMesh(pSliderKnobMesh);
+    m_pFreqSlider->SetKnobColor(0.5,0.8,0.5);
+    m_pFreqSlider->SetRange(440, 1760);
+    m_pFreqSlider->SetColor(0.25,0.4,0.25);
+    m_pFreqSlider->SetOpacity(0.6);
+
+    m_pVolSlider->SetPosition(-250,0,0);
+    m_pVolSlider->SetRotation(0.0,45.0, 0.0);
+    m_pVolSlider->SetMesh(pSliderMesh);
+    m_pVolSlider->SetKnobMesh(pSliderKnobMesh);
+    m_pVolSlider->SetKnobColor(0.6,0.6,0.8);
+    m_pVolSlider->SetRange(0, 1);
+    m_pVolSlider->SetColor(0.3,0.3,0.4);
+    m_pVolSlider->SetOpacity(0.8);
 
     //Update all of the nodes
     m_pSceneTree->Update();
@@ -183,10 +205,19 @@ void MainApp::OnMouseDown(float x, float y, MOUSE_BUTTON btn)
     }
 }
 
-void MainApp::OnSliderReleased()
+void MainApp::OnSliderReleased(Slider *pSlider)
 {
-    float Hz = m_pSlider->GetValue();
-    m_pSoundGen->FillBuffer(Hz, 1.0);
+    if(pSlider == m_pFreqSlider)
+    {
+        m_fFrequency = pSlider->GetValue();
+    }
+    else if (pSlider == m_pVolSlider)
+    {
+        m_fVolume = pSlider->GetValue();
+    }
+
+    m_pSoundGen->Stop();
+    m_pSoundGen->FillBuffer(m_fFrequency, m_fVolume);
     m_pSoundGen->Play();
 }
 
@@ -206,15 +237,54 @@ void MainApp::OnMouseUp(float x, float y, MOUSE_BUTTON btn)
 
 void MainApp::OnMouseMove(float x, float y)
 {
+    //Make a local copy of the list to compare ins and outs
+    std::vector<Node::HitData> old = m_hitList;
     UpdateHitList(x,y);
 
+    std::vector<Node::HitData>::const_iterator oit = old.begin();
+    std::vector<Node::HitData>::const_iterator oend = old.end();
     std::vector<Node::HitData>::const_iterator it = m_hitList.begin();
     std::vector<Node::HitData>::const_iterator end = m_hitList.end();
+
+    //Initializes to zero
+    struct zeroInt
+    {
+        zeroInt() : val(0) {}
+        int val;
+    };
+
+    std::map<Node*,zeroInt> refs;
+    while(oit != oend)
+    {
+        refs[(*oit).pNode].val -= 1;
+        ++oit;
+    }
+
+    it = m_hitList.begin();
     while(it != end)
     {
         Node::HitData data = (*it);
+        refs[data.pNode].val += 1;
         data.pNode->OnMouseOver(data);
         ++it;
+    }
+
+    std::map<Node*,zeroInt>::const_iterator mit = refs.begin();
+    std::map<Node*,zeroInt>::const_iterator mend = refs.end();
+
+    while(mit != mend)
+    {
+        Node *pNode = (*mit).first;
+        int val = (*mit).second.val;
+        if(val < 0)
+        {
+            pNode->OnMouseOut();
+        }
+        else if(val > 0)
+        {
+            pNode->OnMouseIn();
+        }
+        ++mit;
     }
 }
 
@@ -237,8 +307,15 @@ void MainApp::OnResize(float width, float height)
     }
 }
 
-void MainApp::Update()
+void MainApp::Update(float frameTimeS)
 {   
+#ifdef PRINT_FPS
+    if(frameTimeS)
+    {
+        printf("Frame time: %1.5fms | FPS: %3.2f \n", frameTimeS*1000.0, 1.0/frameTimeS);
+    }
+#endif
+
     m_drawList.clear();
     m_pSceneTree->Update();
     m_pSceneTree->RegisterIntoList(this);

@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 
     glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
 
@@ -96,20 +96,29 @@ int main(int argc, char *argv[])
     glfwSetMouseButtonCallback(mousebutton);
     glfwSetMousePosCallback(mousepos);
 
+    glClearColor(0.1,0.1,0.1,1.0);
+
     app.Init();
     app.OnResize(WINDOW_WIDTH, WINDOW_HEIGHT);
 
+    float start = 0;
+    float end = 0;
+    float delta = 0;
+
 	while(1) {
+        start = glfwGetTime();
         if(glfwGetKey(GLFW_KEY_ESC)) break;
 
         //Clear the existing screen data
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         //Update app logic
-		app.Update();
+		app.Update(delta);
 
         //Flip the screen buffer
         glfwSwapBuffers();
+        end = glfwGetTime();
+        delta = end - start;
 	}
 
     app.ShutDown();

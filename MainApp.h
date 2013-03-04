@@ -27,7 +27,7 @@ public:
     void Init();
 
     //Runs once per frame
-    void Update();
+    void Update(float frameTimeS);
 
     //Shut down the application
     void ShutDown();
@@ -40,7 +40,7 @@ public:
 
     void RegisterToDraw(Node *pNode);
 
-    void OnSliderReleased();
+    void OnSliderReleased(Slider *pSlider);
 
 private:
     //Returns a ray represented by origin: rOx,rOy,rOz direction: rDx, rDy, rDz based on the mouse coords
@@ -51,10 +51,13 @@ private:
 
     float m_winW;
     float m_winH;
+    float m_fVolume;
+    float m_fFrequency;
 
     Camera *m_pCamera;
     Node *m_pSceneTree;
-    Slider *m_pSlider;
+    Slider *m_pFreqSlider;
+    Slider *m_pVolSlider;
     Renderer *m_pRenderer;
     SoundGenerator *m_pSoundGen;
     std::vector<Node*> m_drawList;

@@ -5,6 +5,7 @@
 
 Slider::Slider(MainApp *app)
 {
+    m_bMouseDown = false;
     m_pApp = app;
     m_pKnob = new Node;
     AddChild(m_pKnob);
@@ -50,7 +51,7 @@ void Slider::Update()
 void Slider::PlaceKnob()
 {
     //Position the knob based on our value
-    m_pKnob->SetPosition(0.0, m_fHeight * m_fNormalizedPosition - m_fHeight / 2.0, m_fKnobDepth);
+    m_pKnob->SetPosition(0.0, (m_fHeight - m_fKnobHeight)*m_fNormalizedPosition - (m_fHeight - m_fKnobHeight) / 2.0, m_fKnobDepth);
 }
 
 float Slider::GetValue()
@@ -71,8 +72,25 @@ void Slider::SetKnobMesh(Mesh *pKnob)
     m_fKnobHeight = maxY - minY;
 }
 
+void Slider::OnMouseIn()
+{
+    SetOpacity(1.0);
+}
+
+void Slider::OnMouseOut()
+{
+    SetOpacity(0.5);
+
+    //Treat mouse out like a release
+    HitData dummy;
+    dummy.pNode = this;
+    OnMouseUp(dummy);
+}
+
 void Slider::OnMouseDown(HitData hit)
 {
+    if(m_bMouseDown) return; //Mouse is already down
+
     if(!m_pMesh) return;
 
     float lx,ly,lz;
@@ -92,6 +110,7 @@ void Slider::OnMouseDown(HitData hit)
     float hitx, hity, hitz;
     if(m_pMesh->GetAABB().RayCollision(lx, ly, lz, dx, dy, dz, hitx, hity, hitz))
     {
+        m_bMouseDown = true;
         m_fNormalizedPosition = hity/m_fHeight + 0.5; //hity is from -m_fHeight to m_fHeight
 
         //Clamp
@@ -105,6 +124,8 @@ void Slider::OnMouseDown(HitData hit)
 void Slider::OnMouseOver(HitData hit)
 {
     if(!m_pMesh) return;
+
+    if(!m_bMouseDown) return; //Only do this if the mouse is held down
 
     float lx,ly,lz;
     WorldToLocal(hit.hitX, hit.hitY, hit.hitZ, lx, ly, lz);
@@ -135,9 +156,9 @@ void Slider::OnMouseOver(HitData hit)
 
 void Slider::OnMouseUp(HitData hit)
 {
-    float lx,ly,lz;
-    WorldToLocal(hit.hitX, hit.hitY, hit.hitZ, lx, ly, lz);
+    if(!m_bMouseDown) return; //Mouse wasn't pressed in the slider
+    m_bMouseDown = false;
 
     if(m_pApp)
-        m_pApp->OnSliderReleased();
+        m_pApp->OnSliderReleased(this);
 }

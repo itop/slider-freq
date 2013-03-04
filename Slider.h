@@ -17,6 +17,8 @@ public:
     virtual void OnMouseDown(HitData hit);
     virtual void OnMouseUp(HitData hit);
     virtual void OnMouseOver(HitData hit);
+    virtual void OnMouseOut();
+    virtual void OnMouseIn();
     virtual void Update();
 
     void SetKnobMesh(Mesh *pKnob);
@@ -26,6 +28,7 @@ public:
     void PlaceKnob();
 
 private:
+    bool m_bMouseDown;
     float m_fStart;
     float m_fEnd;
     float m_fNormalizedPosition;

@@ -83,6 +83,12 @@ public:
     //Called when mouse is hovering on top of the node
     virtual void OnMouseOver(HitData hit);
 
+    //Called when the cursor enters the node
+    virtual void OnMouseIn();
+
+    //Called when the cursor exits the node
+    virtual void OnMouseOut();
+
 protected:
     void UpdateTransform();
     void UpdateBoundingBox();
@@ -97,6 +103,7 @@ protected:
     std::vector<Node*> m_children;
     
     glm::vec4 m_color;
+    float m_localOpacity;
     glm::vec3 m_pos;
     glm::vec3 m_rot;
     glm::vec3 m_scale;

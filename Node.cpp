@@ -12,6 +12,7 @@ Node::Node()
 {
     m_bTransformDirty = true;
     m_bBoxDirty = true;
+    m_localOpacity = 1.0;
     m_pParent = NULL;
     m_pos = glm::vec3(0.0, 0.0, 0.0);
     m_rot = glm::vec3(0.0, 0.0, 0.0);
@@ -124,6 +125,12 @@ void Node::OnMouseOver(HitData hit)
 void Node::OnMouseUp(HitData hit)
 {}
 
+void Node::OnMouseIn()
+{}
+
+void Node::OnMouseOut()
+{}
+
 void Node::WorldToLocal(float wX, float wY, float wZ, float &lX, float &lY, float &lZ)
 {
     glm::vec4 world = glm::vec4(wX, wY, wZ, 1.0);
@@ -172,6 +179,16 @@ bool Node::GetHitList(float wRayOriginX, float wRayOriginY, float wRayOriginZ,
 
 void Node::Update()
 {
+    //Update opacity
+    if(m_pParent) 
+    {
+        m_color.a = m_pParent->GetOpacity() * m_localOpacity;
+    }
+    else
+    {
+        m_color.a = m_localOpacity;
+    }
+
     UpdateTransform();
 
     std::vector<Node*>::const_iterator it = m_children.begin();
@@ -277,7 +294,7 @@ void Node::SetColor(float r, float g, float b)
 
 void Node::SetOpacity(float opacity)
 {
-    m_color.a = opacity;
+    m_localOpacity = opacity;
 }
 
 void Node::GetColor(float &r, float &g, float &b)
