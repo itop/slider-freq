@@ -102,7 +102,7 @@ void MainApp::Init()
     pSliderKnobMesh->SetAABB(AABB(0.0, 0.0, 0.0, 80.0, 40.0, 10.0));
     
     if(!m_pSceneTree) m_pSceneTree = new Node;
-    if(!m_pSlider) m_pSlider = new Slider;
+    if(!m_pSlider) m_pSlider = new Slider(this);
 
     //Build the tree structure
     m_pSceneTree->AddChild(m_pSlider);
@@ -181,6 +181,13 @@ void MainApp::OnMouseDown(float x, float y, MOUSE_BUTTON btn)
         data.pNode->OnMouseDown(data);
         ++it;
     }
+}
+
+void MainApp::OnSliderReleased()
+{
+    float Hz = m_pSlider->GetValue();
+    m_pSoundGen->FillBuffer(Hz, 1.0);
+    m_pSoundGen->Play();
 }
 
 void MainApp::OnMouseUp(float x, float y, MOUSE_BUTTON btn)

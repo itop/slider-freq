@@ -1,9 +1,11 @@
 #include "Slider.h"
 #include "Mesh.h"
 #include "AABB.h"
+#include "MainApp.h"
 
-Slider::Slider()
+Slider::Slider(MainApp *app)
 {
+    m_pApp = app;
     m_pKnob = new Node;
     AddChild(m_pKnob);
     m_fStart = 0;
@@ -76,13 +78,28 @@ void Slider::OnMouseDown(HitData hit)
     float lx,ly,lz;
     WorldToLocal(hit.hitX, hit.hitY, hit.hitZ, lx, ly, lz);
 
-    m_fNormalizedPosition = ly/m_fHeight;
+    float dx,dy,dz;
+    WorldToLocal(hit.hitX + hit.dirX, hit.hitY + hit.dirY, hit.hitZ + hit.dirZ, dx, dy, dz);
+    //Re-normalize unit vector
+    dx -= lx;
+    dy -= ly;
+    dz -= lz;
+    float mag = sqrt(dx*dx + dy*dy + dz*dz);
+    dx /= mag;
+    dy /= mag;
+    dz /= mag;
 
-    //Clamp
-    m_fNormalizedPosition = m_fNormalizedPosition < 0 ? 0 : m_fNormalizedPosition;
-    m_fNormalizedPosition = m_fNormalizedPosition > 1 ? 1 : m_fNormalizedPosition;
+    float hitx, hity, hitz;
+    if(m_pMesh->GetAABB().RayCollision(lx, ly, lz, dx, dy, dz, hitx, hity, hitz))
+    {
+        m_fNormalizedPosition = hity/m_fHeight + 0.5; //hity is from -m_fHeight to m_fHeight
 
-    PlaceKnob();
+        //Clamp
+        m_fNormalizedPosition = m_fNormalizedPosition < 0 ? 0 : m_fNormalizedPosition;
+        m_fNormalizedPosition = m_fNormalizedPosition > 1 ? 1 : m_fNormalizedPosition;
+
+        PlaceKnob();
+    }   
 }
 
 void Slider::OnMouseOver(HitData hit)
@@ -121,4 +138,6 @@ void Slider::OnMouseUp(HitData hit)
     float lx,ly,lz;
     WorldToLocal(hit.hitX, hit.hitY, hit.hitZ, lx, ly, lz);
 
+    if(m_pApp)
+        m_pApp->OnSliderReleased();
 }

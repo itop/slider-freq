@@ -40,6 +40,8 @@ public:
 
     void RegisterToDraw(Node *pNode);
 
+    void OnSliderReleased();
+
 private:
     //Returns a ray represented by origin: rOx,rOy,rOz direction: rDx, rDy, rDz based on the mouse coords
     void GetRay(float mouseX, float mouseY, float &rOx, float &rOy, float &rOz, float &rDx, float &rDy, float &rDz);

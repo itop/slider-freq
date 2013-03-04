@@ -3,10 +3,11 @@
 
 #include "Node.h"
 class Mesh;
+class MainApp;
 
 class Slider : public Node {
 public:
-    Slider();
+    Slider(MainApp *app);
     ~Slider();
 
     void SetRange(float start, float end);
@@ -32,6 +33,7 @@ private:
     float m_fKnobDepth;
     float m_fHeight;
     Node *m_pKnob;
+    MainApp *m_pApp;
 };
 
 #endif
