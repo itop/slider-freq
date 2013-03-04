@@ -8,6 +8,9 @@
 #include "TransformUtilities.h"
 
 #include "Slider.h"
+#include "Modulator.h"
+
+#include "Button.h"
 
 #include <vector>
 #include <map>
@@ -36,6 +39,9 @@ const char fragmentShader[] =
 
 MainApp::MainApp()
 {
+    m_pGuitarButton = NULL;
+    m_pPianoButton = NULL;
+    m_pModulator = Modulators::GetPiano();
     m_pCamera = NULL;
     m_pSceneTree = NULL;
     m_pRenderer = NULL;
@@ -112,16 +118,39 @@ void MainApp::Init()
 
     pSliderKnobMesh->SetMeshTransform(scaleMatrix);
     pSliderKnobMesh->SetAABB(AABB(0.0, 0.0, 0.0, 80.0, 40.0, 10.0));
+
+    /*
+        Make the button mesh
+    */
+    Mesh *pButtonMesh = new Mesh();
+    pButtonMesh->SetVBOFromArray(cubeVertices, 24);
+    pButtonMesh->SetIBOFromArray(cubeIndices, 26);
     
-    if(!m_pSceneTree) m_pSceneTree = new Node;
-    if(!m_pFreqSlider) m_pFreqSlider = new Slider(this);
-    if(!m_pVolSlider) m_pVolSlider = new Slider(this);
+    scaleMatrix[0]  = 80.0;
+    scaleMatrix[5]  = 60.0;
+    scaleMatrix[10] = 10.0;
+
+    pButtonMesh->SetMeshTransform(scaleMatrix);
+    pButtonMesh->SetAABB(AABB(0.0, 0.0, 0.0, 80.0, 60.0, 10.0));
+    
+    if(!m_pSceneTree)    m_pSceneTree    = new Node;
+    if(!m_pFreqSlider)   m_pFreqSlider   = new Slider(this);
+    if(!m_pVolSlider)    m_pVolSlider    = new Slider(this);
+    if(!m_pPianoButton)  m_pPianoButton  = new Button(this);
+    if(!m_pGuitarButton) m_pGuitarButton = new Button(this);
+
+    //Button container
+    Node *pButtons = new Node;
 
     //Build the tree structure
     m_pSceneTree->AddChild(m_pFreqSlider);
     m_pSceneTree->AddChild(m_pVolSlider);
+    m_pSceneTree->AddChild(pButtons);
+    pButtons->AddChild(m_pPianoButton);
+    pButtons->AddChild(m_pGuitarButton);
 
     //Set up the nodes
+    //Frequency slider
     m_pFreqSlider->SetPosition(250,0,0);
     m_pFreqSlider->SetRotation(0.0,-45.0, 0.0);
     m_pFreqSlider->SetMesh(pSliderMesh);
@@ -131,6 +160,7 @@ void MainApp::Init()
     m_pFreqSlider->SetColor(0.25,0.4,0.25);
     m_pFreqSlider->SetOpacity(0.6);
 
+    //Volume slider
     m_pVolSlider->SetPosition(-250,0,0);
     m_pVolSlider->SetRotation(0.0,45.0, 0.0);
     m_pVolSlider->SetMesh(pSliderMesh);
@@ -139,6 +169,21 @@ void MainApp::Init()
     m_pVolSlider->SetRange(0, 1);
     m_pVolSlider->SetColor(0.3,0.3,0.4);
     m_pVolSlider->SetOpacity(0.8);
+
+    //Button container
+    pButtons->SetPosition(0.0, 200.0, 0.0);
+
+    //Piano button
+    m_pPianoButton->SetPosition(-100, 0.0, 0.0);
+    m_pPianoButton->SetMesh(pButtonMesh);
+    m_pPianoButton->SetUpColor(1.0,0.6,0.6);
+    m_pPianoButton->SetDownColor(0.6,1.0,1.0);
+
+    //Guitar button
+    m_pGuitarButton->SetPosition( 100, 0.0, 0.0);
+    m_pGuitarButton->SetMesh(pButtonMesh);
+    m_pGuitarButton->SetUpColor(0.6,0.6,1.0);
+    m_pGuitarButton->SetDownColor(1.0,1.0,0.6);
 
     //Update all of the nodes
     m_pSceneTree->Update();
@@ -179,6 +224,23 @@ void MainApp::GetRay(float mouseX, float mouseY, float &rOx, float &rOy, float &
     rDz = rayDirZ;
 }
 
+void MainApp::OnButtonPressed(Button *pButton)
+{
+    if(pButton == m_pPianoButton)
+    {
+        m_pModulator = Modulators::GetPiano();
+    }
+
+    if(pButton == m_pGuitarButton)
+    {
+        m_pModulator = Modulators::GetGuitar();
+    }
+
+    m_pSoundGen->Stop();
+    m_pSoundGen->FillBuffer(m_fFrequency, m_fVolume, m_pModulator);
+    m_pSoundGen->Play();
+}
+
 void MainApp::UpdateHitList(float mouseX, float mouseY)
 {
     if(!m_pSceneTree) return;
@@ -217,7 +279,7 @@ void MainApp::OnSliderReleased(Slider *pSlider)
     }
 
     m_pSoundGen->Stop();
-    m_pSoundGen->FillBuffer(m_fFrequency, m_fVolume);
+    m_pSoundGen->FillBuffer(m_fFrequency, m_fVolume, m_pModulator);
     m_pSoundGen->Play();
 }
 

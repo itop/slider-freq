@@ -3,6 +3,7 @@
 
 #include <windows.h>
 #include <mmsystem.h>
+#include "Modulator.h"
 
 class SoundGenerator {
 public:
@@ -12,7 +13,7 @@ public:
     void Format(unsigned int samples, unsigned char bitsPerSample);
     bool PrepareDevice();
     bool CloseDevice();
-    void FillBuffer(int freq, float amp);
+    void FillBuffer(int freq, float amp, const Modulators::Modulator *mod);
     bool Play();
     bool Stop();
     const float *GetWave();

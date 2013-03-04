@@ -8,7 +8,7 @@ class MainApp;
 class Slider : public Node {
 public:
     Slider(MainApp *app);
-    ~Slider();
+    virtual ~Slider();
 
     void SetRange(float start, float end);
     float GetValue();

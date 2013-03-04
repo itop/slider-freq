@@ -24,6 +24,7 @@ public:
     };
 
     Node();
+    virtual ~Node();
 
     void AddChild(Node *pNode);
 

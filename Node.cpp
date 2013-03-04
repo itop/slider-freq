@@ -25,6 +25,9 @@ Node::Node()
     m_color = glm::vec4(1.0, 1.0, 1.0, 1.0);
 }
 
+Node::~Node()
+{}
+
 void Node::SetPosition(glm::vec3 pos)
 {
     m_pos = pos;

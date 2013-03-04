@@ -3,7 +3,9 @@
 
 #include <vector>
 #include "Node.h"
+#include "Modulator.h"
 
+class Button;
 class Camera;
 class ShaderProgram;
 class Renderer;
@@ -41,6 +43,7 @@ public:
     void RegisterToDraw(Node *pNode);
 
     void OnSliderReleased(Slider *pSlider);
+    void OnButtonPressed(Button *pButton);
 
 private:
     //Returns a ray represented by origin: rOx,rOy,rOz direction: rDx, rDy, rDz based on the mouse coords
@@ -54,10 +57,14 @@ private:
     float m_fVolume;
     float m_fFrequency;
 
+    const Modulators::Modulator *m_pModulator;
+
     Camera *m_pCamera;
     Node *m_pSceneTree;
     Slider *m_pFreqSlider;
     Slider *m_pVolSlider;
+    Button *m_pGuitarButton;
+    Button *m_pPianoButton;
     Renderer *m_pRenderer;
     SoundGenerator *m_pSoundGen;
     std::vector<Node*> m_drawList;
