@@ -4,6 +4,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/matrix_operation.hpp>
 
+#include <algorithm>
+
 AABB::AABB()
 {
     
@@ -25,6 +27,50 @@ AABB::~AABB()
 
 }
 
+bool AABB::RayCollision(float rx, float ry, float rz, float dx, float dy, float dz, float &px, float &py, float &pz) const
+{
+    float dirFracX, dirFracY, dirFracZ;
+    dirFracX = 1.0f / dx;
+    dirFracY = 1.0f / dy;
+    dirFracZ = 1.0f / dz;
+
+    float minX, minY, minZ, maxX, maxY, maxZ;
+    GetExtents(minX, minY, minZ, maxX, maxY, maxZ);
+
+    float t1 = (minX - rx)*dirFracX;
+    float t2 = (maxX - rx)*dirFracX;
+    float t3 = (minY - ry)*dirFracY;
+    float t4 = (maxY - ry)*dirFracY;
+    float t5 = (minZ - rz)*dirFracZ;
+    float t6 = (maxZ - rz)*dirFracZ;
+
+    float tmin = std::max(std::max(std::min(t1, t2), std::min(t3, t4)), std::min(t5, t6));
+    float tmax = std::min(std::min(std::max(t1, t2), std::max(t3, t4)), std::max(t5, t6));
+
+    float t;
+    // if tmax < 0, ray (line) is intersecting AABB, but whole AABB is behind us
+    if (tmax < 0)
+    {
+        t = tmax;
+        return false;
+    }
+
+    // if tmin > tmax, ray doesn't intersect AABB
+    if (tmin > tmax)
+    {
+        t = tmax;
+        return false;
+    }
+
+    t = tmin;
+
+    px = rx + dx*t;
+    py = ry + dy*t;
+    pz = rz + dz*t;
+
+    return true;
+}
+
 void AABB::AxisAlign()
 {
     //Re-axis-align the box by finding its min and max XYZs
@@ -38,22 +84,22 @@ void AABB::AxisAlign()
     if(minExtents.x < minX) minX = minExtents.x;
     if(maxExtents.x < minX) minX = maxExtents.x;
     if(minExtents.x < minX) minX = minExtents.x;
-    if(maxExtents.x < minY) minY = maxExtents.y;
-    if(minExtents.x < minY) minY = minExtents.y;
-    if(maxExtents.x < minY) minY = maxExtents.y;
-    if(maxExtents.x < minZ) minZ = maxExtents.z;
-    if(minExtents.x < minZ) minZ = minExtents.z;
-    if(maxExtents.x < minZ) minZ = maxExtents.z;
+    if(maxExtents.y < minY) minY = maxExtents.y;
+    if(minExtents.y < minY) minY = minExtents.y;
+    if(maxExtents.y < minY) minY = maxExtents.y;
+    if(maxExtents.z < minZ) minZ = maxExtents.z;
+    if(minExtents.z < minZ) minZ = minExtents.z;
+    if(maxExtents.z < minZ) minZ = maxExtents.z;
 
-    if(minExtents.x < maxX) maxX = minExtents.x;
-    if(maxExtents.x < maxX) maxX = maxExtents.x;
-    if(minExtents.x < maxX) maxX = minExtents.x;
-    if(maxExtents.x < maxY) maxY = maxExtents.y;
-    if(minExtents.x < maxY) maxY = minExtents.y;
-    if(maxExtents.x < maxY) maxY = maxExtents.y;
-    if(maxExtents.x < maxZ) maxZ = maxExtents.z;
-    if(minExtents.x < maxZ) maxZ = minExtents.z;
-    if(maxExtents.x < maxZ) maxZ = maxExtents.z;
+    if(minExtents.x > maxX) maxX = minExtents.x;
+    if(maxExtents.x > maxX) maxX = maxExtents.x;
+    if(minExtents.x > maxX) maxX = minExtents.x;
+    if(maxExtents.y > maxY) maxY = maxExtents.y;
+    if(minExtents.y > maxY) maxY = minExtents.y;
+    if(maxExtents.y > maxY) maxY = maxExtents.y;
+    if(maxExtents.z > maxZ) maxZ = maxExtents.z;
+    if(minExtents.z > maxZ) maxZ = minExtents.z;
+    if(maxExtents.z > maxZ) maxZ = maxExtents.z;
 
     minExtents = glm::vec3(minX, minY, minZ);
     maxExtents = glm::vec3(maxX, maxY, maxZ);
@@ -96,7 +142,7 @@ AABB AABB::Combine(AABB *boxes, unsigned int count)
 
     for(int i = 0; i < count; i++)
     {
-        AABB &box = &boxes[i];
+        AABB &box = boxes[i];
         float bMinX, bMinY, bMinZ;
         float bMaxX, bMaxY, bMaxZ;
 

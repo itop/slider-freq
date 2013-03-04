@@ -13,20 +13,12 @@ public:
     void CompileVertexShaderFromSource(const char *src);
     void Link();
     void Use();
-    GLint GetModelMatrixLocation();
-    GLint GetViewMatrixLocation();
-    GLint GetProjectionMatrixLocation();
-    GLint GetPositionLocation();
+    GLuint GetHandle();
 
 private:
     GLuint m_uVertexShader;
     GLuint m_uFragmentShader;
     GLuint m_uShaderProgram;
-
-    GLint m_modelMatrixLocation;
-    GLint m_viewMatrixLocation;
-    GLint m_projectionMatrixLocation;
-    GLint m_positionLocation;
 };
 
 #endif

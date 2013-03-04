@@ -1,4 +1,6 @@
 #include "Node.h"
+#include "MainApp.h"
+#include "Mesh.h"
 
 #include <GL/glew.h>
 #include <GL/gl.h> 
@@ -8,82 +10,226 @@
 
 Node::Node()
 {
-    m_bDirty = true;
+    m_bTransformDirty = true;
+    m_bBoxDirty = true;
     m_pParent = NULL;
     m_pos = glm::vec3(0.0, 0.0, 0.0);
     m_rot = glm::vec3(0.0, 0.0, 0.0);
-    m_scale = glm::vec3(0.0, 0.0, 0.0);
+    m_scale = glm::vec3(1.0, 1.0, 1.0);
     m_transform = glm::mat4(1.0, 0.0, 0.0, 0.0,
                             0.0, 1.0, 0.0, 0.0,
                             0.0, 0.0, 1.0, 0.0,
                             0.0, 0.0, 0.0, 1.0);
+    m_pMesh = NULL;
+    m_color = glm::vec4(1.0, 1.0, 1.0, 1.0);
 }
 
 void Node::SetPosition(glm::vec3 pos)
 {
     m_pos = pos;
+    SetTransformDirty();
 }
 
 void Node::SetPosition(float x, float y, float z)
 {
     m_pos = glm::vec3(x,y,z);
+    SetTransformDirty();
+    SetBoxDirty();
 }
 
 void Node::SetRotation(glm::vec3 rot)
 {
     m_rot = rot;
+    SetTransformDirty();
+    SetBoxDirty();
 }
 
 void Node::SetRotation(float x, float y, float z)
 {
     m_rot = glm::vec3(x,y,z);
+    SetTransformDirty();
+    SetBoxDirty();
 }
 
 void Node::SetScale(glm::vec3 scale)
 {
     m_scale = scale;
+    SetTransformDirty();
+    SetBoxDirty();
 }
 
 void Node::SetScale(float x, float y, float z)
 {
     m_scale = glm::vec3(x,y,z);
+    SetTransformDirty();
+    SetBoxDirty();
 }
 
-const float* Node::GetTransform()
+const float* Node::GetTransformArray()
 {
 	return &m_transform[0][0];
+}
+
+const glm::mat4 &Node::GetTransformMatrix() const
+{
+    return m_transform;
 }
 
 void Node::AddChild(Node *pNode)
 {
     pNode->m_pParent = this;
     m_children.push_back(pNode);
+
+    SetBoxDirty();
 }
 
-void Node::SetDirty()
+Node* Node::GetParent()
 {
-    m_bDirty = true;
+    return m_pParent;
+}
+
+void Node::SetTransformDirty()
+{
+    m_bTransformDirty = true;
     
     //Dirty the children too
     std::vector<Node*>::const_iterator it = m_children.begin();
     std::vector<Node*>::const_iterator end = m_children.end();
     while(it != end)
     {
-        (*it)->SetDirty();
+        (*it)->SetTransformDirty();
         ++it;
     }
 }
 
+void Node::SetBoxDirty()
+{
+    m_bBoxDirty = true;
+
+    //Dirty the parent chain up to root
+    Node *nd = m_pParent;
+    while(nd)   //nd will be null when it reaches a node with no parent
+    {
+        nd->SetBoxDirty();
+        nd = nd->GetParent();
+    }
+}
+
+void Node::OnMouseDown(HitData hit)
+{}
+
+void Node::OnMouseOver(HitData hit)
+{}
+
+void Node::OnMouseUp(HitData hit)
+{}
+
+void Node::WorldToLocal(float wX, float wY, float wZ, float &lX, float &lY, float &lZ)
+{
+    glm::vec4 world = glm::vec4(wX, wY, wZ, 1.0);
+    glm::mat4 invModel = glm::inverse(m_transform);
+
+    glm::vec3 local = glm::vec3(invModel*world);
+
+    lX = local.x;
+    lY = local.y;
+    lZ = local.z;
+}
+
+bool Node::GetHitList(float wRayOriginX, float wRayOriginY, float wRayOriginZ,
+                      float wRayUnitX, float wRayUnitY, float wRayUnitZ,
+                      std::vector<HitData> &hitList)
+{
+    float hitx, hity, hitz;
+    
+    bool hit = m_boundingBox.RayCollision(wRayOriginX, wRayOriginY, wRayOriginZ, 
+                                            wRayUnitX,   wRayUnitY,   wRayUnitZ, 
+                                                 hitx,        hity,        hitz);
+    
+    if(hit)
+    {
+        HitData dat;
+        dat.pNode = this;
+        dat.hitX = hitx;
+        dat.hitY = hity;
+        dat.hitZ = hitz;
+        dat.dirX = wRayUnitX;
+        dat.dirY = wRayUnitY;
+        dat.dirZ = wRayUnitZ;
+        hitList.push_back(dat);
+
+        std::vector<Node*>::const_iterator it = m_children.begin();
+        std::vector<Node*>::const_iterator end = m_children.end();
+        while(it != end)
+        {
+            (*it)->GetHitList(wRayOriginX, wRayOriginY, wRayOriginZ, wRayUnitX, wRayUnitY, wRayUnitZ, hitList);
+            ++it;
+        }
+    }
+
+    return hit;
+}
+
+void Node::Update()
+{
+    UpdateTransform();
+
+    std::vector<Node*>::const_iterator it = m_children.begin();
+    std::vector<Node*>::const_iterator end = m_children.end();
+    while(it != end)
+    {
+        (*it)->Update();
+        ++it;
+    }
+
+    UpdateBoundingBox();
+}
+
+const AABB& Node::GetBoundingBox()
+{
+    return m_boundingBox;
+}
+
+void Node::UpdateBoundingBox()
+{
+    if(!m_bBoxDirty) return;
+
+    int totalBoxes = m_children.size() + 1;
+    AABB *boxes = new AABB[totalBoxes]; //All children + mesh
+
+    if(m_pMesh)
+    {
+        boxes[0] = m_pMesh->GetAABB();
+
+        //Transform the mesh bounding box into world space
+        boxes[0].Transform(&m_transform[0][0]);
+    }
+
+    //Get all child bounding boxes
+    std::vector<Node*>::const_iterator it = m_children.begin();
+    std::vector<Node*>::const_iterator end = m_children.end();
+    int i = 1;
+    while(it != end)
+    {
+        boxes[i] = (*it)->GetBoundingBox();
+        ++it;
+        ++i;
+    }
+
+    m_boundingBox = AABB::Combine(boxes, totalBoxes);
+
+    m_bBoxDirty = false;
+}
+
 void Node::UpdateTransform()
 {
-    if(!m_bDirty) return;
+    if(!m_bTransformDirty) return;
 
     glm::mat4 parentTransform;
 
     if(m_pParent)
     {
-        const float *mat = m_pParent->GetTransform();
-        parentTransform = glm::mat4(mat[0], mat[1], mat[2], mat[3], mat[4], mat[5], mat[6], mat[7], mat[8], mat[9], mat[10], mat[11], mat[12], mat[13], mat[14], mat[15]);
+        parentTransform = m_pParent->GetTransformMatrix();
     }
     else
     {
@@ -106,11 +252,49 @@ void Node::UpdateTransform()
     std::vector<Node*>::const_iterator it = m_children.begin();
     std::vector<Node*>::const_iterator end = m_children.end();
 
+    m_bTransformDirty = false;
+}
+
+void Node::RegisterIntoList(MainApp *app)
+{
+    app->RegisterToDraw(this);
+
+    std::vector<Node*>::const_iterator it = m_children.begin();
+    std::vector<Node*>::const_iterator end = m_children.end();
     while(it != end)
     {
-        (*it)->UpdateTransform();
+        (*it)->RegisterIntoList(app);
         ++it;
-    }
+    } 
+}
+
+void Node::SetColor(float r, float g, float b)
+{
+    m_color.r = r;
+    m_color.g = g;
+    m_color.b = b;
+}
+
+void Node::SetOpacity(float opacity)
+{
+    m_color.a = opacity;
+}
+
+void Node::GetColor(float &r, float &g, float &b)
+{
+    r = m_color.r;
+    g = m_color.g;
+    b = m_color.b;
+}
+
+glm::vec3 Node::GetColor()
+{
+    return glm::vec3(m_color);
+}
+
+float Node::GetOpacity()
+{
+    return m_color.a;
 }
 
 const Mesh *Node::GetMesh()
@@ -121,4 +305,5 @@ const Mesh *Node::GetMesh()
 void Node::SetMesh(Mesh *pMesh)
 {
     m_pMesh = pMesh;
+    SetBoxDirty();
 }

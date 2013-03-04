@@ -18,6 +18,8 @@ public:
     //Static function to combine boxes together
     static AABB Combine(AABB *boxes, unsigned int count);
 
+    bool RayCollision(float rx, float ry, float rz, float dx, float dy, float dz, float &px, float &py, float &pz) const;
+
 private:
     void AxisAlign();
     glm::vec3 minExtents;

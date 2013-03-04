@@ -84,6 +84,7 @@
     <ClInclude Include="Node.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="ShaderProgram.h" />
+    <ClInclude Include="Slider.h" />
     <ClInclude Include="SoundGenerator.h" />
     <ClInclude Include="TransformUtilities.h" />
   </ItemGroup>
@@ -96,6 +97,7 @@
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
+    <ClCompile Include="Slider.cpp" />
     <ClCompile Include="SoundGenerator.cpp" />
     <ClCompile Include="TransformUtilities.cpp" />
   </ItemGroup>

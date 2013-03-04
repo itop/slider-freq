@@ -77,6 +77,12 @@ int main(int argc, char *argv[])
     //Create GL context
     glfwOpenWindow(WINDOW_WIDTH, WINDOW_HEIGHT, 8, 8, 8, 8, 8, 8, GLFW_WINDOW);
 
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+
     //Initialize GLEW
     GLenum err = glewInit();
     if(err != GLEW_NO_ERROR)

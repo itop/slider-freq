@@ -34,11 +34,16 @@ void Renderer::Render(const std::vector<Node*> &nodes)
         Per-frame set-up
     */
 
+    //Get uniform locations
+    GLuint handle = m_pActiveShader->GetHandle();
+    GLint lViewMatrix   = glGetUniformLocation(handle, "view");
+    GLint lProjMatrix   = glGetUniformLocation(handle, "projection");
+
     //Projection matrix
-    glUniformMatrix4fv(m_pActiveShader->GetProjectionMatrixLocation(), 1, GL_FALSE, m_pActiveCamera->GetProjectionMatrix());
+    glUniformMatrix4fv(lProjMatrix, 1, GL_FALSE, m_pActiveCamera->GetProjectionMatrix());
 
     //View matrix
-    glUniformMatrix4fv(m_pActiveShader->GetViewMatrixLocation(), 1, GL_FALSE, m_pActiveCamera->GetViewMatrix());
+    glUniformMatrix4fv(lViewMatrix, 1, GL_FALSE, m_pActiveCamera->GetViewMatrix());
 
     std::vector<Node*>::const_iterator it = nodes.cbegin();
     std::vector<Node*>::const_iterator end = nodes.cend();
@@ -64,16 +69,36 @@ void Renderer::Render(Node *pNode)
         return;
     }
 
-    //Model matrix
-    glUniformMatrix4fv(m_pActiveShader->GetModelMatrixLocation(), 1, GL_FALSE, pNode->GetTransform());
+    glm::vec4 color = glm::vec4(pNode->GetColor(), pNode->GetOpacity());
+
+    //Get uniform locations
+    GLuint handle = m_pActiveShader->GetHandle();
+    GLint lColor        = glGetUniformLocation(handle, "color");
+    GLint lModelMatrix  = glGetUniformLocation(handle, "model");
+
+    //Get attribute locations
+    GLint lPosition     = glGetAttribLocation(handle, "position");
+
+    /*
+        Set uniforms
+    */
+
+    //Color
+    glUniform4fv(lColor, 1, &color[0]);
+
+    //Model matrix - Mesh transform combined with node transform
+    glm::mat4 meshT = pMesh->GetMeshTransform();
+    glm::mat4 nodeT = pNode->GetTransformMatrix();
+    glm::mat4 model = nodeT*meshT;
+    glUniformMatrix4fv(lModelMatrix, 1, GL_FALSE, &model[0][0]);
 
     //Vertex attributes
-    glEnableVertexAttribArray(m_pActiveShader->GetPositionLocation());
-    glVertexAttribPointer(m_pActiveShader->GetPositionLocation(), 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
+    glEnableVertexAttribArray(lPosition);
+    glVertexAttribPointer(lPosition, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
 
     //Vertex buffer objects
     glBindBuffer(GL_ARRAY_BUFFER, pMesh->GetVBO());
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pMesh->GetIBO());
 
-    glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_INT, (GLvoid*)0);
+    glDrawElements(GL_TRIANGLE_STRIP, pMesh->GetIndexCount(), GL_UNSIGNED_INT, (GLvoid*)0);
 }

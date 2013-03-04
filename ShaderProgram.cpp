@@ -19,6 +19,11 @@ void ShaderProgram::Create()
     m_uShaderProgram = glCreateProgram();
 }
 
+GLuint ShaderProgram::GetHandle()
+{
+    return m_uShaderProgram;
+}
+
 void ShaderProgram::CompileFragmentShaderFromSource(const char *src)
 {
     if(!m_uFragmentShader)
@@ -44,30 +49,6 @@ void ShaderProgram::CompileVertexShaderFromSource(const char *src)
 void ShaderProgram::Link()
 {
     glLinkProgram(m_uShaderProgram);
-    m_modelMatrixLocation = glGetUniformLocation(m_uShaderProgram, "model");
-    m_projectionMatrixLocation = glGetUniformLocation(m_uShaderProgram, "projection");
-    m_viewMatrixLocation = glGetUniformLocation(m_uShaderProgram, "view");
-    m_positionLocation = glGetAttribLocation(m_uShaderProgram, "position");
-}
-
-GLint ShaderProgram::GetModelMatrixLocation()
-{
-    return m_modelMatrixLocation;
-}
-
-GLint ShaderProgram::GetViewMatrixLocation()
-{
-    return m_viewMatrixLocation;
-}
-
-GLint ShaderProgram::GetProjectionMatrixLocation()
-{
-    return m_projectionMatrixLocation;
-}
-
-GLint ShaderProgram::GetPositionLocation()
-{
-    return m_positionLocation;
 }
 
 void ShaderProgram::Use()

@@ -7,6 +7,8 @@
 #include "SoundGenerator.h"
 #include "TransformUtilities.h"
 
+#include "Slider.h"
+
 const char vertexShader[] = 
     "uniform mat4 projection;                           \n"
     "uniform mat4 view;                                 \n"
@@ -17,8 +19,9 @@ const char vertexShader[] =
     "}                                                  \n";
 
 const char fragmentShader[] =
+    "uniform vec4 color;                                \n"
     "void main() {                                      \n"
-    "   gl_FragColor = vec4(1.0,1.0,1.0,1.0);           \n"
+    "   gl_FragColor = color;                           \n"
     "}                                                  \n";
 
 MainApp::MainApp()
@@ -38,7 +41,7 @@ void MainApp::Init()
     m_pCamera->SetFOV(45);
     m_pCamera->SetDepthRange(0.1, 1000.0);
     m_pCamera->SetAspectRatio(1.0);
-    m_pCamera->SetPosition(0, 0, -800);
+    m_pCamera->SetPosition(0, 0, 800);
     m_pCamera->SetTarget(0, 0, 0);
     m_pCamera->SetUp(0, 1, 0);
 	m_pCamera->Update();
@@ -56,24 +59,67 @@ void MainApp::Init()
     m_pRenderer->SetShader(pShader);
 
     //Initialize a square object
-    GLuint squareVBO, squareIBO;
+    GLfloat cubeVertices[24] =   { 
+                                   -0.5, -0.5,  0.5,  //0
+                                    0.5, -0.5,  0.5,  //1
+                                   -0.5,  0.5,  0.5,  //2
+                                    0.5,  0.5,  0.5,  //3
+                                    0.5,  0.5, -0.5,  //4
+                                    0.5, -0.5, -0.5,  //5
+                                   -0.5, -0.5, -0.5,  //6
+                                   -0.5,  0.5, -0.5,  //7
+                                };
 
-    GLfloat squareVertices[8] = {-0.5, -0.5,
-                                 -0.5,  0.5,
-                                  0.5,  0.5,
-                                  0.5, -0.5};
-    GLuint squareIndices[4] = {0, 1, 3, 2};
+    GLuint cubeIndices[26] = {0, 1, 2, 3, 3, 1, 4, 5, 5, 6, 4, 7, 7, 6, 2, 0, 0, 6, 1, 5, 5, 2, 2, 3, 7, 4};
 
-    //Will leak if Init is called multiple times
-    Mesh *pSquareMesh = new Mesh();
-    pSquareMesh->SetVBOFromArray(squareVertices, 8);
-    pSquareMesh->SetIBOFromArray(squareIndices, 4);
+    /*
+        Make the slider mesh
+    */
+    Mesh *pSliderMesh = new Mesh();
+    pSliderMesh->SetVBOFromArray(cubeVertices, 24);
+    pSliderMesh->SetIBOFromArray(cubeIndices, 26);
+
+    float scaleMatrix[] = { 100.0,   0.0,   0.0,   0.0, 
+                              0.0, 500.0,   0.0,   0.0,
+                              0.0,   0.0,  10.0,   0.0,
+                              0.0,   0.0,   0.0,   1.0 };
+
+    pSliderMesh->SetMeshTransform(scaleMatrix);
+    pSliderMesh->SetAABB(AABB(0.0, 0.0, 0.0, 100.0, 500.0, 10.0));
+
+    /*
+        Make the slider knob mesh
+    */
+    Mesh *pSliderKnobMesh = new Mesh();
+    pSliderKnobMesh->SetVBOFromArray(cubeVertices, 24);
+    pSliderKnobMesh->SetIBOFromArray(cubeIndices, 26);
+
+    scaleMatrix[0]  = 80.0;
+    scaleMatrix[5]  = 40.0;
+    scaleMatrix[10] = 10.0;
+
+    pSliderKnobMesh->SetMeshTransform(scaleMatrix);
+    pSliderKnobMesh->SetAABB(AABB(0.0, 0.0, 0.0, 80.0, 40.0, 10.0));
     
     if(!m_pSceneTree) m_pSceneTree = new Node;
-    m_pSceneTree->SetPosition(0,0,0);
-    m_pSceneTree->SetScale(100,100,1);
-    m_pSceneTree->SetMesh(pSquareMesh);
-    m_pSceneTree->UpdateTransform();
+    if(!m_pSlider) m_pSlider = new Slider;
+
+    //Build the tree structure
+    m_pSceneTree->AddChild(m_pSlider);
+
+    //Set up the nodes
+    m_pSlider->SetPosition(250,0,0);
+    m_pSlider->SetRotation(0.0,-45.0, 0.0);
+    m_pSlider->SetScale(1.0, 1.0, 1.0);
+    m_pSlider->SetMesh(pSliderMesh);
+    m_pSlider->SetKnobMesh(pSliderKnobMesh);
+    m_pSlider->SetKnobColor(0.5,0.5,0.2);
+    m_pSlider->SetRange(400, 1200);
+    m_pSlider->SetColor(0.2,0.2,0.5);
+    m_pSlider->SetOpacity(1.0);
+
+    //Update all of the nodes
+    m_pSceneTree->Update();
 
     //Initialize sound generator
     if(!m_pSoundGen) m_pSoundGen = new SoundGenerator();
@@ -82,39 +128,86 @@ void MainApp::Init()
     m_pSoundGen->PrepareDevice();
 }  
 
+void MainApp::GetRay(float mouseX, float mouseY, float &rOx, float &rOy, float &rOz, float &rDx, float &rDy, float &rDz)
+{
+    if(!m_pCamera) return;
+
+    float rayStartWX, rayStartWY, rayStartWZ;
+    ScreenToWorld(mouseX, mouseY, 0, m_pCamera, m_winW, m_winH, rayStartWX, rayStartWY, rayStartWZ);
+
+    float rayEndWX, rayEndWY, rayEndWZ;
+    ScreenToWorld(mouseX, mouseY, 1, m_pCamera, m_winW, m_winH, rayEndWX, rayEndWY, rayEndWZ);
+
+    //Normalize the ray direction
+    float rayDirX, rayDirY, rayDirZ;
+    rayDirX = rayEndWX - rayStartWX;
+    rayDirY = rayEndWY - rayStartWY;
+    rayDirZ = rayEndWZ - rayStartWZ;
+
+    float rayMagnitude = sqrt(rayDirX*rayDirX + rayDirY*rayDirY + rayDirZ*rayDirZ);
+    rayDirX /= rayMagnitude;
+    rayDirY /= rayMagnitude;
+    rayDirZ /= rayMagnitude;
+
+    rOx = rayStartWX;
+    rOy = rayStartWY;
+    rOz = rayStartWZ;
+    rDx = rayDirX;
+    rDy = rayDirY;
+    rDz = rayDirZ;
+}
+
+void MainApp::UpdateHitList(float mouseX, float mouseY)
+{
+    if(!m_pSceneTree) return;
+
+    m_hitList.clear();
+
+    float rx, ry, rz, rdx, rdy, rdz;
+    GetRay(mouseX,m_winH - mouseY,rx,ry,rz,rdx,rdy,rdz);
+    
+    m_pSceneTree->GetHitList(rx, ry, rz, rdx, rdy, rdz, m_hitList);
+}
+
 void MainApp::OnMouseDown(float x, float y, MOUSE_BUTTON btn)
 {
-    if(m_pSoundGen)
+    UpdateHitList(x,y);
+
+    std::vector<Node::HitData>::const_iterator it = m_hitList.begin();
+    std::vector<Node::HitData>::const_iterator end = m_hitList.end();
+    while(it != end)
     {
-        m_pSoundGen->FillBuffer(x, 1.0);
-        m_pSoundGen->Play();
+        Node::HitData data = (*it);
+        data.pNode->OnMouseDown(data);
+        ++it;
     }
 }
 
 void MainApp::OnMouseUp(float x, float y, MOUSE_BUTTON btn)
 {
+    UpdateHitList(x,y);
+
+    std::vector<Node::HitData>::const_iterator it = m_hitList.begin();
+    std::vector<Node::HitData>::const_iterator end = m_hitList.end();
+    while(it != end)
+    {
+        Node::HitData data = (*it);
+        data.pNode->OnMouseUp(data);
+        ++it;
+    }
 }
 
 void MainApp::OnMouseMove(float x, float y)
 {
-    if(m_pSceneTree)
+    UpdateHitList(x,y);
+
+    std::vector<Node::HitData>::const_iterator it = m_hitList.begin();
+    std::vector<Node::HitData>::const_iterator end = m_hitList.end();
+    while(it != end)
     {
-        //In order to get the mouse's fake Z coordinate, we will use the Z coordinate of 
-        //the origin in screen space
-        static const float originWX = 0.0;
-        static const float originWY = 0.0;
-        static const float originWZ = 0.0;
-        float originSX, originSY, originSZ;
-
-        //Origin world -> Screen coordinates
-        WorldToScreen(originWX, originWY, originWZ, m_pCamera, m_winW, m_winH, originSX, originSY, originSZ);
-
-        //Mouse screen -> world coordinates
-        float mouseWX, mouseWY, mouseWZ;
-        ScreenToWorld(x, m_winH - y, originSZ, m_pCamera, m_winW, m_winH, mouseWX, mouseWY, mouseWZ);
-
-        m_pSceneTree->SetPosition(mouseWX, mouseWY, mouseWZ);
-        m_pSceneTree->UpdateTransform();
+        Node::HitData data = (*it);
+        data.pNode->OnMouseOver(data);
+        ++it;
     }
 }
 
@@ -139,10 +232,15 @@ void MainApp::OnResize(float width, float height)
 
 void MainApp::Update()
 {   
-    std::vector<Node*> drawList;
-    drawList.push_back(m_pSceneTree);
+    m_drawList.clear();
+    m_pSceneTree->Update();
+    m_pSceneTree->RegisterIntoList(this);
+    m_pRenderer->Render(m_drawList);
+}
 
-    m_pRenderer->Render(drawList);
+void MainApp::RegisterToDraw(Node *pNode)
+{
+    m_drawList.push_back(pNode);
 }
 
 void MainApp::ShutDown()
