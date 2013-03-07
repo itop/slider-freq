@@ -1,13 +1,14 @@
 #ifndef SLIDER_H
 #define SLIDER_H
 
+#include "Handlers.h"
 #include "Node.h"
 class Mesh;
 class MainApp;
 
 class Slider : public Node {
 public:
-    Slider(MainApp *app);
+    Slider(SliderHandler *pHandler);
     virtual ~Slider();
 
     void SetRange(float start, float end);
@@ -23,6 +24,7 @@ public:
 
     void SetKnobMesh(Mesh *pKnob);
     void SetKnobColor(float r, float g, float b);
+    void SetNormalizedValue(float val);
 
     //Puts the knob in the appropriate place matching the value
     void PlaceKnob();
@@ -36,7 +38,7 @@ private:
     float m_fKnobDepth;
     float m_fHeight;
     Node *m_pKnob;
-    MainApp *m_pApp;
+    SliderHandler *m_pHandler;
 };
 
 #endif

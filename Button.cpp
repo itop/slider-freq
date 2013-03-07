@@ -3,9 +3,9 @@
 #include "MainApp.h"
 
 
-Button::Button(MainApp *app)
+Button::Button(ButtonHandler *pHandler)
 {
-    m_pApp = app;
+    m_pHandler = pHandler;
 }
 
 Button::~Button()
@@ -36,7 +36,7 @@ void Button::OnMouseDown(HitData hit)
     {
         SetColor(m_downColor.r, m_downColor.g, m_downColor.b);
 
-        m_pApp->OnButtonPressed(this);
+        m_pHandler->OnButtonPressed(this);
     }   
 }
 

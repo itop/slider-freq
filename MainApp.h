@@ -4,6 +4,7 @@
 #include <vector>
 #include "Node.h"
 #include "Modulator.h"
+#include "Handlers.h"
 
 class Button;
 class Camera;
@@ -13,7 +14,7 @@ class SoundGenerator;
 class Slider;
 
 //Encapsulates the application data
-class MainApp 
+class MainApp : public ButtonHandler , public KeyboardHandler, public SliderHandler
 {
 public:
     enum MOUSE_BUTTON {
@@ -43,7 +44,12 @@ public:
     void RegisterToDraw(Node *pNode);
 
     void OnSliderReleased(Slider *pSlider);
-    void OnButtonPressed(Button *pButton);
+
+    //From ButtonHandler
+    virtual void OnButtonPressed(Button *pButton);
+
+    //From KeyboardHandler
+    virtual void OnKeyboardNotePlayed(Keyboard *pKeyboard, const float &note);
 
 private:
     //Returns a ray represented by origin: rOx,rOy,rOz direction: rDx, rDy, rDz based on the mouse coords
@@ -51,6 +57,8 @@ private:
 
     //Returns a list of hit nodes based on mouseX and mouseY
     void UpdateHitList(float mouseX, float mouseY);
+
+    void GenerateSound();
 
     float m_winW;
     float m_winH;
@@ -63,6 +71,7 @@ private:
     Node *m_pSceneTree;
     Slider *m_pFreqSlider;
     Slider *m_pVolSlider;
+    Keyboard *m_pKeyboard;
     Button *m_pGuitarButton;
     Button *m_pPianoButton;
     Renderer *m_pRenderer;

@@ -79,11 +79,14 @@
   <ItemGroup>
     <ClInclude Include="AABB.h" />
     <ClInclude Include="Button.h" />
+    <ClInclude Include="Handlers.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Keyboard.h" />
     <ClInclude Include="MainApp.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Modulator.h" />
     <ClInclude Include="Node.h" />
+    <ClInclude Include="Notes.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="ShaderProgram.h" />
     <ClInclude Include="Slider.h" />
@@ -94,10 +97,12 @@
     <ClCompile Include="AABB.cpp" />
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainApp.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Node.cpp" />
+    <ClCompile Include="Notes.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
     <ClCompile Include="Slider.cpp" />

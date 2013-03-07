@@ -3,10 +3,10 @@
 #include "AABB.h"
 #include "MainApp.h"
 
-Slider::Slider(MainApp *app)
+Slider::Slider(SliderHandler *pHandler)
 {
     m_bMouseDown = false;
-    m_pApp = app;
+    m_pHandler = pHandler;
     m_pKnob = new Node;
     AddChild(m_pKnob);
     m_fStart = 0;
@@ -87,6 +87,12 @@ void Slider::OnMouseOut()
     OnMouseUp(dummy);
 }
 
+void Slider::SetNormalizedValue(float val)
+{
+    m_fNormalizedPosition = val;
+    m_pHandler->OnSliderReleased(this);
+}
+
 void Slider::OnMouseDown(HitData hit)
 {
     if(m_bMouseDown) return; //Mouse is already down
@@ -159,6 +165,6 @@ void Slider::OnMouseUp(HitData hit)
     if(!m_bMouseDown) return; //Mouse wasn't pressed in the slider
     m_bMouseDown = false;
 
-    if(m_pApp)
-        m_pApp->OnSliderReleased(this);
+    if(m_pHandler)
+        m_pHandler->OnSliderReleased(this);
 }

@@ -3,11 +3,11 @@
 
 #include "Node.h"
 
-class MainApp;
+class ButtonHandler;
 
 class Button : public Node {
 public:
-    Button(MainApp *app);
+    Button(ButtonHandler *pHandler);
     virtual ~Button();
 
     //Inherited from Node
@@ -19,7 +19,7 @@ public:
     void SetDownColor(float r, float g, float b);
 
 private:
-    MainApp *m_pApp;
+    ButtonHandler *m_pHandler;
     glm::vec3 m_upColor;
     glm::vec3 m_downColor;
 };

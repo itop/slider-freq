@@ -17,6 +17,7 @@ public:
     bool Play();
     bool Stop();
     const float *GetWave();
+    unsigned int GetWaveSize();
 
 private:
     HWAVEOUT m_hDeviceHandle;

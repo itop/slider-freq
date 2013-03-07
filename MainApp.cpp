@@ -6,6 +6,7 @@
 #include "Mesh.h"
 #include "SoundGenerator.h"
 #include "TransformUtilities.h"
+#include "Keyboard.h"
 
 #include "Slider.h"
 #include "Modulator.h"
@@ -14,6 +15,8 @@
 
 #include <vector>
 #include <map>
+
+#include "Notes.h"
 
 //Uncomment this to see the FPS in the console output
 //#define PRINT_FPS
@@ -132,12 +135,34 @@ void MainApp::Init()
 
     pButtonMesh->SetMeshTransform(scaleMatrix);
     pButtonMesh->SetAABB(AABB(0.0, 0.0, 0.0, 80.0, 60.0, 10.0));
+
+    /*
+        Make the keyboard button mesh
+    */
+    Mesh *pKeyboardButtonMesh = new Mesh();
+    pKeyboardButtonMesh->SetVBOFromArray(cubeVertices, 24);
+    pKeyboardButtonMesh->SetIBOFromArray(cubeIndices, 26);
+
+    scaleMatrix[0] = 50.0;
+    scaleMatrix[5] = 150.0;
+    scaleMatrix[10] = 10.0;
+
+    pKeyboardButtonMesh->SetMeshTransform(scaleMatrix);
+    pKeyboardButtonMesh->SetAABB(AABB(0.0, 0.0, 0.0, 50.0, 150.0, 10.0));
     
     if(!m_pSceneTree)    m_pSceneTree    = new Node;
     if(!m_pFreqSlider)   m_pFreqSlider   = new Slider(this);
     if(!m_pVolSlider)    m_pVolSlider    = new Slider(this);
     if(!m_pPianoButton)  m_pPianoButton  = new Button(this);
     if(!m_pGuitarButton) m_pGuitarButton = new Button(this);
+
+    //Keyboard requires some additional set-up
+    float pNotes[] = { Notes::A4, Notes::AsBb4, Notes::B4, Notes::C4, Notes::CsDb4, Notes::D4, Notes::DsEb4 };
+    Keyboard::KeyboardData keyData;
+    keyData.numKeys = 7;
+    keyData.pKeyMesh = pKeyboardButtonMesh;
+    keyData.pNotes = pNotes;
+    if(!m_pKeyboard)     m_pKeyboard     = new Keyboard(this, keyData);
 
     //Button container
     Node *pButtons = new Node;
@@ -146,8 +171,9 @@ void MainApp::Init()
     m_pSceneTree->AddChild(m_pFreqSlider);
     m_pSceneTree->AddChild(m_pVolSlider);
     m_pSceneTree->AddChild(pButtons);
-    pButtons->AddChild(m_pPianoButton);
-    pButtons->AddChild(m_pGuitarButton);
+        pButtons->AddChild(m_pPianoButton);
+        pButtons->AddChild(m_pGuitarButton);
+    m_pSceneTree->AddChild(m_pKeyboard);
 
     //Set up the nodes
     //Frequency slider
@@ -169,6 +195,7 @@ void MainApp::Init()
     m_pVolSlider->SetRange(0, 1);
     m_pVolSlider->SetColor(0.3,0.3,0.4);
     m_pVolSlider->SetOpacity(0.8);
+    m_pVolSlider->SetNormalizedValue(0.5);
 
     //Button container
     pButtons->SetPosition(0.0, 200.0, 0.0);
@@ -184,6 +211,10 @@ void MainApp::Init()
     m_pGuitarButton->SetMesh(pButtonMesh);
     m_pGuitarButton->SetUpColor(0.6,0.6,1.0);
     m_pGuitarButton->SetDownColor(1.0,1.0,0.6);
+
+    //Keyboard
+    m_pKeyboard->SetPosition(0, -200, 50);
+    m_pKeyboard->SetRotation(-80,0,0);
 
     //Update all of the nodes
     m_pSceneTree->Update();
@@ -224,6 +255,12 @@ void MainApp::GetRay(float mouseX, float mouseY, float &rOx, float &rOy, float &
     rDz = rayDirZ;
 }
 
+void MainApp::OnKeyboardNotePlayed(Keyboard *pKeyboard, const float &note)
+{
+    m_fFrequency = note;
+    GenerateSound();
+}
+
 void MainApp::OnButtonPressed(Button *pButton)
 {
     if(pButton == m_pPianoButton)
@@ -236,9 +273,7 @@ void MainApp::OnButtonPressed(Button *pButton)
         m_pModulator = Modulators::GetGuitar();
     }
 
-    m_pSoundGen->Stop();
-    m_pSoundGen->FillBuffer(m_fFrequency, m_fVolume, m_pModulator);
-    m_pSoundGen->Play();
+    GenerateSound();
 }
 
 void MainApp::UpdateHitList(float mouseX, float mouseY)
@@ -267,6 +302,15 @@ void MainApp::OnMouseDown(float x, float y, MOUSE_BUTTON btn)
     }
 }
 
+void MainApp::GenerateSound()
+{
+    if(!m_pSoundGen) return;
+
+    m_pSoundGen->Stop();
+    m_pSoundGen->FillBuffer(m_fFrequency, m_fVolume, m_pModulator);
+    m_pSoundGen->Play();
+}
+
 void MainApp::OnSliderReleased(Slider *pSlider)
 {
     if(pSlider == m_pFreqSlider)
@@ -278,9 +322,7 @@ void MainApp::OnSliderReleased(Slider *pSlider)
         m_fVolume = pSlider->GetValue();
     }
 
-    m_pSoundGen->Stop();
-    m_pSoundGen->FillBuffer(m_fFrequency, m_fVolume, m_pModulator);
-    m_pSoundGen->Play();
+    GenerateSound();
 }
 
 void MainApp::OnMouseUp(float x, float y, MOUSE_BUTTON btn)
