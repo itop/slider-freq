@@ -42,6 +42,7 @@ const char fragmentShader[] =
 
 MainApp::MainApp()
 {
+    m_bPlaying = false;
     m_pGuitarButton = NULL;
     m_pPianoButton = NULL;
     m_pModulator = Modulators::GetPiano();
@@ -226,6 +227,20 @@ void MainApp::Init()
     m_pSoundGen->PrepareDevice();
 }  
 
+void MainApp::OnPlayComplete()
+{
+    m_bPlaying = false;
+
+    std::vector<SoundHandler*>::const_iterator it = m_soundHandlers.begin();
+    std::vector<SoundHandler*>::const_iterator end = m_soundHandlers.end();
+
+    while(it != end)
+    {
+        (*it)->OnSoundFinished(m_fFrequency);
+        ++it;
+    }
+}
+
 void MainApp::GetRay(float mouseX, float mouseY, float &rOx, float &rOy, float &rOz, float &rDx, float &rDy, float &rDz)
 {
     if(!m_pCamera) return;
@@ -305,6 +320,9 @@ void MainApp::OnMouseDown(float x, float y, MOUSE_BUTTON btn)
 void MainApp::GenerateSound()
 {
     if(!m_pSoundGen) return;
+
+    if(m_bPlaying) OnPlayComplete(); //We are interrupting the current sound
+    m_bPlaying = true;
 
     m_pSoundGen->Stop();
     m_pSoundGen->FillBuffer(m_fFrequency, m_fVolume, m_pModulator);

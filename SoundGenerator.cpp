@@ -4,6 +4,7 @@
 #include <math.h>
 
 #include "Modulator.h"
+#include "SoundCallback.h"
 
 SoundGenerator::SoundGenerator()
 {
@@ -47,7 +48,7 @@ void SoundGenerator::Format(unsigned int samples, unsigned char bitsPerSample)
 
 bool SoundGenerator::PrepareDevice()
 {
-    if(waveOutOpen(&m_hDeviceHandle, WAVE_MAPPER, &m_waveFormat, 0, 0, CALLBACK_NULL) != MMSYSERR_NOERROR)
+    if(waveOutOpen(&m_hDeviceHandle, WAVE_MAPPER, &m_waveFormat, (DWORD_PTR)waveOutProc, 0, CALLBACK_FUNCTION) != MMSYSERR_NOERROR)
     {
         return false;
     }

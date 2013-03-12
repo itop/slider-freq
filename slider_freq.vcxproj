@@ -90,6 +90,7 @@
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="ShaderProgram.h" />
     <ClInclude Include="Slider.h" />
+    <ClInclude Include="SoundCallback.h" />
     <ClInclude Include="SoundGenerator.h" />
     <ClInclude Include="TransformUtilities.h" />
   </ItemGroup>

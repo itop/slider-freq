@@ -4,10 +4,9 @@
 class Notes 
 {
 public:
-    static float B4;
     static float A0;     
     static float AsBb0;
-    static float B;     
+    static float B0;     
     static float C1;   
     static float CsDb1;  
     static float D1;    

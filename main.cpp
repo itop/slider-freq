@@ -5,8 +5,7 @@
 
 #include "MainApp.h"
 
-//TEMP
-#include "SoundGenerator.h"
+#include "SoundCallback.h"
 
 #define WINDOW_WIDTH  800
 #define WINDOW_HEIGHT 800
@@ -14,9 +13,19 @@
 MainApp app;
 int mouse_x, mouse_y;
 
+static boolean soundDoneFlag = false;
+
 void GLFWCALL resize(int w, int h)
 {
     app.OnResize(w,h);
+}
+
+void CALLBACK waveOutProc(HWAVEOUT, UINT uMsg, DWORD, DWORD, DWORD)
+{
+    if(uMsg == WOM_DONE)
+    {
+        soundDoneFlag = true;
+    }
 }
 
 void GLFWCALL mousepos(int x, int y)
@@ -111,6 +120,12 @@ int main(int argc, char *argv[])
 
         //Clear the existing screen data
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        if(soundDoneFlag)
+        {
+            app.OnPlayComplete();
+            soundDoneFlag = false;
+        }
 
         //Update app logic
 		app.Update(delta);

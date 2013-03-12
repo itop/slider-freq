@@ -45,6 +45,8 @@ public:
 
     void OnSliderReleased(Slider *pSlider);
 
+    void OnPlayComplete();
+
     //From ButtonHandler
     virtual void OnButtonPressed(Button *pButton);
 
@@ -67,6 +69,7 @@ private:
 
     const Modulators::Modulator *m_pModulator;
 
+    bool m_bPlaying;
     Camera *m_pCamera;
     Node *m_pSceneTree;
     Slider *m_pFreqSlider;
@@ -78,6 +81,7 @@ private:
     SoundGenerator *m_pSoundGen;
     std::vector<Node*> m_drawList;
     std::vector<Node::HitData> m_hitList;
+    std::vector<SoundHandler*> m_soundHandlers;
 };
 
 #endif
