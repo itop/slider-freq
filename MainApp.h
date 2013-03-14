@@ -74,6 +74,8 @@ private:
     Node *m_pSceneTree;
     Renderer *m_pRenderer;
     SoundGenerator *m_pSoundGen;
+    ShaderProgram *m_pNormalShader;
+    ShaderProgram *m_pVisualizationShader;
     std::vector<Node*> m_drawList;
     std::vector<Node::HitData> m_hitList;
     std::list<float> m_noteList;

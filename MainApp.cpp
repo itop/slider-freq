@@ -26,20 +26,21 @@
 #include <stdio.h>
 #endif
 
-const char vertexShader[] = 
+const char transformVertexShader[] = 
     "uniform mat4 projection;                           \n"
     "uniform mat4 view;                                 \n"
     "uniform mat4 model;                                \n"
     "attribute vec4 position;                           \n"
     "void main() {                                      \n"
-    "    gl_Position = projection*view*model*position;  \n"
+    "   gl_Position = projection*view*model*position;   \n"
     "}                                                  \n";
 
-const char fragmentShader[] =
+const char colorFragmentShader[] =
     "uniform vec4 color;                                \n"
     "void main() {                                      \n"
     "   gl_FragColor = color;                           \n"
     "}                                                  \n";
+
 
 MainApp::MainApp()
 {
@@ -71,17 +72,16 @@ void MainApp::Init()
     m_pCamera->SetUp(0, 1, 0);
 	m_pCamera->Update();
 
-    //Will leak if Init is called multiple times
-    ShaderProgram *pShader = new ShaderProgram();
-    pShader->Create();
-    pShader->CompileFragmentShaderFromSource(fragmentShader);
-    pShader->CompileVertexShaderFromSource(vertexShader);
-    pShader->Link();
-    pShader->Use();
+    if(!m_pNormalShader) m_pNormalShader = new ShaderProgram();
+    m_pNormalShader->Create();
+    m_pNormalShader->CompileFragmentShaderFromSource(colorFragmentShader);
+    m_pNormalShader->CompileVertexShaderFromSource(transformVertexShader);
+    m_pNormalShader->Link();
+    
 
     if(!m_pRenderer) m_pRenderer = new Renderer();
     m_pRenderer->SetCamera(m_pCamera);
-    m_pRenderer->SetShader(pShader);
+    m_pRenderer->SetShader(m_pNormalShader);
 
     //Initialize sound generator
     if(!m_pSoundGen) m_pSoundGen = new SoundGenerator();
@@ -192,6 +192,9 @@ void MainApp::GenerateSound()
     m_pSoundGen->FillBuffer(m_fFrequency, m_fVolume, m_pModulator);
     m_pSoundGen->Play();
 
+    m_pRenderer->SetWaveTexture(m_fFrequency, m_pModulator);
+    m_pRenderer->ResetTime();
+
     m_bPlaying = true;
 }
 
@@ -292,7 +295,10 @@ void MainApp::Update(float frameTimeS)
     m_drawList.clear();
     m_pSceneTree->Update();
     m_pSceneTree->RegisterIntoList(this);
+
+    m_pRenderer->SetShader(m_pNormalShader);
     m_pRenderer->Render(m_drawList);
+    m_pRenderer->Update(frameTimeS);
 
     GenerateSound();
 }
