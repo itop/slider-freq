@@ -78,6 +78,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AABB.h" />
+    <ClInclude Include="Activity.h" />
     <ClInclude Include="Button.h" />
     <ClInclude Include="Handlers.h" />
     <ClInclude Include="Camera.h" />
@@ -98,6 +99,7 @@
     <ClCompile Include="AABB.cpp" />
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="IntervalActivity.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainApp.cpp" />

@@ -17,6 +17,7 @@
 #include <map>
 
 #include "Notes.h"
+#include "Activity.h"
 
 //Uncomment this to see the FPS in the console output
 //#define PRINT_FPS
@@ -43,8 +44,7 @@ const char fragmentShader[] =
 MainApp::MainApp()
 {
     m_bPlaying = false;
-    m_pGuitarButton = NULL;
-    m_pPianoButton = NULL;
+    m_pCurrentActivity = NULL;
     m_pModulator = Modulators::GetPiano();
     m_pCamera = NULL;
     m_pSceneTree = NULL;
@@ -55,6 +55,9 @@ MainApp::MainApp()
 
 MainApp::~MainApp()
 {
+    delete m_pCamera;
+    delete m_pCurrentActivity;
+    delete m_pRenderer;
 }
 
 void MainApp::Init()
@@ -80,166 +83,18 @@ void MainApp::Init()
     m_pRenderer->SetCamera(m_pCamera);
     m_pRenderer->SetShader(pShader);
 
-    //Initialize a square object
-    GLfloat cubeVertices[24] =   { 
-                                   -0.5, -0.5,  0.5,  //0
-                                    0.5, -0.5,  0.5,  //1
-                                   -0.5,  0.5,  0.5,  //2
-                                    0.5,  0.5,  0.5,  //3
-                                    0.5,  0.5, -0.5,  //4
-                                    0.5, -0.5, -0.5,  //5
-                                   -0.5, -0.5, -0.5,  //6
-                                   -0.5,  0.5, -0.5,  //7
-                                };
-
-    GLuint cubeIndices[26] = {0, 1, 2, 3, 3, 1, 4, 5, 5, 6, 4, 7, 7, 6, 2, 0, 0, 6, 1, 5, 5, 2, 2, 3, 7, 4};
-
-    /*
-        Make the slider mesh
-    */
-    Mesh *pSliderMesh = new Mesh();
-    pSliderMesh->SetVBOFromArray(cubeVertices, 24);
-    pSliderMesh->SetIBOFromArray(cubeIndices, 26);
-
-    float scaleMatrix[] = { 100.0,   0.0,   0.0,   0.0, 
-                              0.0, 500.0,   0.0,   0.0,
-                              0.0,   0.0,  10.0,   0.0,
-                              0.0,   0.0,   0.0,   1.0 };
-
-    pSliderMesh->SetMeshTransform(scaleMatrix);
-    pSliderMesh->SetAABB(AABB(0.0, 0.0, 0.0, 100.0, 500.0, 10.0));
-
-    /*
-        Make the slider knob mesh
-    */
-    Mesh *pSliderKnobMesh = new Mesh();
-    pSliderKnobMesh->SetVBOFromArray(cubeVertices, 24);
-    pSliderKnobMesh->SetIBOFromArray(cubeIndices, 26);
-
-    scaleMatrix[0]  = 80.0;
-    scaleMatrix[5]  = 40.0;
-    scaleMatrix[10] = 10.0;
-
-    pSliderKnobMesh->SetMeshTransform(scaleMatrix);
-    pSliderKnobMesh->SetAABB(AABB(0.0, 0.0, 0.0, 80.0, 40.0, 10.0));
-
-    /*
-        Make the button mesh
-    */
-    Mesh *pButtonMesh = new Mesh();
-    pButtonMesh->SetVBOFromArray(cubeVertices, 24);
-    pButtonMesh->SetIBOFromArray(cubeIndices, 26);
-    
-    scaleMatrix[0]  = 80.0;
-    scaleMatrix[5]  = 60.0;
-    scaleMatrix[10] = 10.0;
-
-    pButtonMesh->SetMeshTransform(scaleMatrix);
-    pButtonMesh->SetAABB(AABB(0.0, 0.0, 0.0, 80.0, 60.0, 10.0));
-
-    /*
-        Make the keyboard button mesh
-    */
-    Mesh *pKeyboardButtonMesh = new Mesh();
-    pKeyboardButtonMesh->SetVBOFromArray(cubeVertices, 24);
-    pKeyboardButtonMesh->SetIBOFromArray(cubeIndices, 26);
-
-    scaleMatrix[0] = 50.0;
-    scaleMatrix[5] = 150.0;
-    scaleMatrix[10] = 10.0;
-
-    pKeyboardButtonMesh->SetMeshTransform(scaleMatrix);
-    pKeyboardButtonMesh->SetAABB(AABB(0.0, 0.0, 0.0, 50.0, 150.0, 10.0));
-    
-    if(!m_pSceneTree)    m_pSceneTree    = new Node;
-    if(!m_pFreqSlider)   m_pFreqSlider   = new Slider(this);
-    if(!m_pVolSlider)    m_pVolSlider    = new Slider(this);
-    if(!m_pPianoButton)  m_pPianoButton  = new Button(this);
-    if(!m_pGuitarButton) m_pGuitarButton = new Button(this);
-
-    //Keyboard requires some additional set-up
-    float pNotes[] = { Notes::A4, Notes::AsBb4, Notes::B4, Notes::C4, Notes::CsDb4, Notes::D4, Notes::DsEb4 };
-    Keyboard::KeyboardData keyData;
-    keyData.numKeys = 7;
-    keyData.pKeyMesh = pKeyboardButtonMesh;
-    keyData.pNotes = pNotes;
-    if(!m_pKeyboard)     m_pKeyboard     = new Keyboard(this, keyData);
-
-    //Button container
-    Node *pButtons = new Node;
-
-    //Build the tree structure
-    m_pSceneTree->AddChild(m_pFreqSlider);
-    m_pSceneTree->AddChild(m_pVolSlider);
-    m_pSceneTree->AddChild(pButtons);
-        pButtons->AddChild(m_pPianoButton);
-        pButtons->AddChild(m_pGuitarButton);
-    m_pSceneTree->AddChild(m_pKeyboard);
-
-    //Set up the nodes
-    //Frequency slider
-    m_pFreqSlider->SetPosition(250,0,0);
-    m_pFreqSlider->SetRotation(0.0,-45.0, 0.0);
-    m_pFreqSlider->SetMesh(pSliderMesh);
-    m_pFreqSlider->SetKnobMesh(pSliderKnobMesh);
-    m_pFreqSlider->SetKnobColor(0.5,0.8,0.5);
-    m_pFreqSlider->SetRange(440, 1760);
-    m_pFreqSlider->SetColor(0.25,0.4,0.25);
-    m_pFreqSlider->SetOpacity(0.6);
-
-    //Volume slider
-    m_pVolSlider->SetPosition(-250,0,0);
-    m_pVolSlider->SetRotation(0.0,45.0, 0.0);
-    m_pVolSlider->SetMesh(pSliderMesh);
-    m_pVolSlider->SetKnobMesh(pSliderKnobMesh);
-    m_pVolSlider->SetKnobColor(0.6,0.6,0.8);
-    m_pVolSlider->SetRange(0, 1);
-    m_pVolSlider->SetColor(0.3,0.3,0.4);
-    m_pVolSlider->SetOpacity(0.8);
-    m_pVolSlider->SetNormalizedValue(0.5);
-
-    //Button container
-    pButtons->SetPosition(0.0, 200.0, 0.0);
-
-    //Piano button
-    m_pPianoButton->SetPosition(-100, 0.0, 0.0);
-    m_pPianoButton->SetMesh(pButtonMesh);
-    m_pPianoButton->SetUpColor(1.0,0.6,0.6);
-    m_pPianoButton->SetDownColor(0.6,1.0,1.0);
-
-    //Guitar button
-    m_pGuitarButton->SetPosition( 100, 0.0, 0.0);
-    m_pGuitarButton->SetMesh(pButtonMesh);
-    m_pGuitarButton->SetUpColor(0.6,0.6,1.0);
-    m_pGuitarButton->SetDownColor(1.0,1.0,0.6);
-
-    //Keyboard
-    m_pKeyboard->SetPosition(0, -200, 50);
-    m_pKeyboard->SetRotation(-80,0,0);
-
-    //Update all of the nodes
-    m_pSceneTree->Update();
-
     //Initialize sound generator
     if(!m_pSoundGen) m_pSoundGen = new SoundGenerator();
 
     m_pSoundGen->Format(44100, 16);
     m_pSoundGen->PrepareDevice();
+
+    //Interval activity
+    m_pCurrentActivity = new IntervalActivity(this, 220, 293.665);
+    m_pSceneTree = m_pCurrentActivity->GetRootNode();
+
+    m_fVolume = 1;
 }  
-
-void MainApp::OnPlayComplete()
-{
-    m_bPlaying = false;
-
-    std::vector<SoundHandler*>::const_iterator it = m_soundHandlers.begin();
-    std::vector<SoundHandler*>::const_iterator end = m_soundHandlers.end();
-
-    while(it != end)
-    {
-        (*it)->OnSoundFinished(m_fFrequency);
-        ++it;
-    }
-}
 
 void MainApp::GetRay(float mouseX, float mouseY, float &rOx, float &rOy, float &rOz, float &rDx, float &rDy, float &rDz)
 {
@@ -270,27 +125,6 @@ void MainApp::GetRay(float mouseX, float mouseY, float &rOx, float &rOy, float &
     rDz = rayDirZ;
 }
 
-void MainApp::OnKeyboardNotePlayed(Keyboard *pKeyboard, const float &note)
-{
-    m_fFrequency = note;
-    GenerateSound();
-}
-
-void MainApp::OnButtonPressed(Button *pButton)
-{
-    if(pButton == m_pPianoButton)
-    {
-        m_pModulator = Modulators::GetPiano();
-    }
-
-    if(pButton == m_pGuitarButton)
-    {
-        m_pModulator = Modulators::GetGuitar();
-    }
-
-    GenerateSound();
-}
-
 void MainApp::UpdateHitList(float mouseX, float mouseY)
 {
     if(!m_pSceneTree) return;
@@ -317,30 +151,48 @@ void MainApp::OnMouseDown(float x, float y, MOUSE_BUTTON btn)
     }
 }
 
+void MainApp::OnPlayComplete()
+{
+    m_bPlaying = false;
+
+    //Play the next element in the queue
+    if(m_noteList.size() > 0)
+    {
+        m_fFrequency = m_noteList.front();
+        m_noteList.pop_front();
+    }
+    else
+    {
+        m_fFrequency = 0;
+    }
+}
+
+void MainApp::QueueNote(float note, bool playImmediately /* = false */)
+{
+    if(playImmediately)
+    {
+        m_noteList.clear();
+    }
+    m_noteList.push_back(note);
+
+    GenerateSound();
+}
+
 void MainApp::GenerateSound()
 {
+    if(m_bPlaying) return; //Already playing
     if(!m_pSoundGen) return;
 
-    if(m_bPlaying) OnPlayComplete(); //We are interrupting the current sound
-    m_bPlaying = true;
+    if(m_noteList.size() > 0)
+        m_fFrequency = m_noteList.front();
+    else
+        return; //Nothing to play
 
     m_pSoundGen->Stop();
     m_pSoundGen->FillBuffer(m_fFrequency, m_fVolume, m_pModulator);
     m_pSoundGen->Play();
-}
 
-void MainApp::OnSliderReleased(Slider *pSlider)
-{
-    if(pSlider == m_pFreqSlider)
-    {
-        m_fFrequency = pSlider->GetValue();
-    }
-    else if (pSlider == m_pVolSlider)
-    {
-        m_fVolume = pSlider->GetValue();
-    }
-
-    GenerateSound();
+    m_bPlaying = true;
 }
 
 void MainApp::OnMouseUp(float x, float y, MOUSE_BUTTON btn)
@@ -437,11 +289,12 @@ void MainApp::Update(float frameTimeS)
         printf("Frame time: %1.5fms | FPS: %3.2f \n", frameTimeS*1000.0, 1.0/frameTimeS);
     }
 #endif
-
     m_drawList.clear();
     m_pSceneTree->Update();
     m_pSceneTree->RegisterIntoList(this);
     m_pRenderer->Render(m_drawList);
+
+    GenerateSound();
 }
 
 void MainApp::RegisterToDraw(Node *pNode)

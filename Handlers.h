@@ -23,10 +23,4 @@ public:
     virtual void OnSliderReleased(Slider *pSlider) = 0;
 };
 
-class SoundHandler
-{
-public:
-    virtual void OnSoundFinished(float note) = 0;
-};
-
 #endif

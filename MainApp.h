@@ -2,10 +2,12 @@
 #define MAINAPP_H
 
 #include <vector>
+#include <list>
 #include "Node.h"
 #include "Modulator.h"
 #include "Handlers.h"
 
+class Activity;
 class Button;
 class Camera;
 class ShaderProgram;
@@ -14,7 +16,7 @@ class SoundGenerator;
 class Slider;
 
 //Encapsulates the application data
-class MainApp : public ButtonHandler , public KeyboardHandler, public SliderHandler
+class MainApp
 {
 public:
     enum MOUSE_BUTTON {
@@ -43,15 +45,10 @@ public:
 
     void RegisterToDraw(Node *pNode);
 
-    void OnSliderReleased(Slider *pSlider);
-
     void OnPlayComplete();
 
-    //From ButtonHandler
-    virtual void OnButtonPressed(Button *pButton);
-
-    //From KeyboardHandler
-    virtual void OnKeyboardNotePlayed(Keyboard *pKeyboard, const float &note);
+    //Add a note to the queue, if playImmediately is set to true, the queue will be emptied and replaced with this note
+    void QueueNote(float note, bool playImmediately = false);
 
 private:
     //Returns a ray represented by origin: rOx,rOy,rOz direction: rDx, rDy, rDz based on the mouse coords
@@ -69,19 +66,17 @@ private:
 
     const Modulators::Modulator *m_pModulator;
 
+    Activity *m_pCurrentActivity;
+    std::list<Activity*> m_activities;
+
     bool m_bPlaying;
     Camera *m_pCamera;
     Node *m_pSceneTree;
-    Slider *m_pFreqSlider;
-    Slider *m_pVolSlider;
-    Keyboard *m_pKeyboard;
-    Button *m_pGuitarButton;
-    Button *m_pPianoButton;
     Renderer *m_pRenderer;
     SoundGenerator *m_pSoundGen;
     std::vector<Node*> m_drawList;
     std::vector<Node::HitData> m_hitList;
-    std::vector<SoundHandler*> m_soundHandlers;
+    std::list<float> m_noteList;
 };
 
 #endif
