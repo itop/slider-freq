@@ -21,17 +21,12 @@ const char waveFragmentShader[] =
     "uniform float time;                                \n"
     "varying vec2 vTexCoord;                            \n"
     "void main() {                                      \n"
-    "   float waveVal = texture1D(waveTex, vTexCoord.x).r;\n"
-    "   float myY = vTexCoord.y * 2.0 - 1.0;            \n"
-    "   float theirY = waveVal * 2.0 - 1.0;             \n"
-    "   theirY /= 4.0;                                  \n"
-    "   const float rng = 0.1;                          \n"
-    "   float dist = max(rng - abs(myY - theirY), 0.0); \n"
-    "   dist /= rng;                                    \n"
-    "   float xDist = abs(vTexCoord.x - time);          \n"
-    "   xDist = max(rng - xDist, 0.0);                  \n"
-    "   xDist /= rng;                                   \n"
-    "   gl_FragColor = vec4(dist,dist*xDist,dist,1.0);  \n"
+    "   float waveVal = texture1D(waveTex, vTexCoord.x);\n"
+    "   waveVal = waveVal*2.0 - 1.0;                    \n"
+    "   float myY = vTexCoord.y*4.0 - 2.0;              \n"
+    "   float yDiff = max(1.0 - abs(myY - waveVal), 0.0);  \n"
+    "   float xDiff = max(0.1 - abs(vTexCoord.x - time), 0.0)/0.1;\n"
+    "   gl_FragColor = vec4(0.0,yDiff,0.0,xDiff*yDiff);\n"
     "}                                                  \n";
 
 Renderer::Renderer()
@@ -53,10 +48,10 @@ Renderer::Renderer()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4*sizeof(int), indices, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, m_visualizationVBO);
-    float vbuf[] = {-1.0, -1.0, 0.0, 0.0, //XY UV
-                     1.0, -1.0, 1.0, 0.0, 
-                    -1.0,  1.0, 0.0, 1.0,
-                     1.0,  1.0, 1.0, 1.0};
+    float vbuf[] = {-1.0, -0.1, 0.0, 0.0, //XY UV
+                     1.0, -0.1, 1.0, 0.0, 
+                    -1.0,  0.1, 0.0, 1.0,
+                     1.0,  0.1, 1.0, 1.0};
     glBufferData(GL_ARRAY_BUFFER, 16*sizeof(float), vbuf, GL_STATIC_DRAW);
 
     glBindTexture(GL_TEXTURE_1D, m_visualizationTexture);
@@ -88,7 +83,7 @@ void Renderer::SetWaveTexture(float frequency, const Modulators::Modulator *pMod
 {
     for(int i = 0; i < WAVE_SAMPLES; i++)
     {
-        m_wave[i] = pMod->Modulate(frequency, (float)i/WAVE_SAMPLES)*127 + 128;
+        m_wave[i] = pMod->Modulate(frequency, (float)i/WAVE_SAMPLES);
     }
 
     glBindTexture(GL_TEXTURE_1D, m_visualizationTexture);

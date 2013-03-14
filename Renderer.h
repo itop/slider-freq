@@ -33,7 +33,7 @@ private:
     ShaderProgram *m_pVisualizationShader;
 
     float m_time;
-    char m_wave[WAVE_SAMPLES];
+    float m_wave[WAVE_SAMPLES];
 
     GLuint m_visualizationVBO;
     GLuint m_visualizationIBO;

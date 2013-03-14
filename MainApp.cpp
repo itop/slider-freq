@@ -46,7 +46,7 @@ MainApp::MainApp()
 {
     m_bPlaying = false;
     m_pCurrentActivity = NULL;
-    m_pModulator = Modulators::GetPiano();
+    m_pModulator = Modulators::GetGuitar();
     m_pCamera = NULL;
     m_pSceneTree = NULL;
     m_pRenderer = NULL;
