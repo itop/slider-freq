@@ -18,6 +18,7 @@
 
 #include "Notes.h"
 #include "Activity.h"
+#include "Animations.h"
 
 //Uncomment this to see the FPS in the console output
 //#define PRINT_FPS
@@ -92,6 +93,9 @@ void MainApp::Init()
     //Interval activity
     m_pCurrentActivity = new IntervalActivity(this, 220, 293.665);
     m_pSceneTree = m_pCurrentActivity->GetRootNode();
+
+    //Start the activity
+    m_pCurrentActivity->OnActivityStart();
 
     m_fVolume = 1;
 }  
@@ -299,6 +303,8 @@ void MainApp::Update(float frameTimeS)
     m_pRenderer->SetShader(m_pNormalShader);
     m_pRenderer->Render(m_drawList);
     m_pRenderer->Update(frameTimeS);
+
+    Animator::GetInstance()->Update(frameTimeS);
 
     GenerateSound();
 }

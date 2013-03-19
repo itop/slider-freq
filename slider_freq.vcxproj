@@ -79,6 +79,7 @@
   <ItemGroup>
     <ClInclude Include="AABB.h" />
     <ClInclude Include="Activity.h" />
+    <ClInclude Include="Animations.h" />
     <ClInclude Include="Button.h" />
     <ClInclude Include="Handlers.h" />
     <ClInclude Include="Camera.h" />
@@ -97,6 +98,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AABB.cpp" />
+    <ClCompile Include="Animations.cpp" />
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="IntervalActivity.cpp" />

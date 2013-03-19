@@ -1,6 +1,7 @@
 #include "Node.h"
 #include "MainApp.h"
 #include "Mesh.h"
+#include "Animations.h"
 
 #include <GL/glew.h>
 #include <GL/gl.h> 
@@ -326,4 +327,75 @@ void Node::SetMesh(Mesh *pMesh)
 {
     m_pMesh = pMesh;
     SetBoxDirty();
+}
+
+void Node::OnAnimationComplete()
+{
+
+}
+
+void Node::OnAnimationUpdated()
+{
+    m_bTransformDirty = true;
+    m_bBoxDirty = true;
+}
+
+//Animation Functions
+void Node::AnimateDeltaPosition(float deltaX, float deltaY, float deltaZ, float durationS)
+{
+    Animator *anim = Animator::GetInstance();
+    
+    if(deltaX)
+    {
+        anim->AnimateFloat(this, &m_pos.x, durationS, m_pos.x, m_pos.x + deltaX);
+    }
+    if(deltaY)
+    {
+        anim->AnimateFloat(this, &m_pos.y, durationS, m_pos.y, m_pos.y + deltaY);
+    }
+    if(deltaZ)
+    {
+        anim->AnimateFloat(this, &m_pos.z, durationS, m_pos.z, m_pos.z + deltaZ);
+    }
+}
+
+void Node::AnimateDeltaRotation(float deltaPitch, float deltaYaw, float deltaRoll, float durationS)
+{
+    Animator *anim = Animator::GetInstance();
+
+    if(deltaPitch)
+    {
+        anim->AnimateFloat(this, &m_rot.x, durationS, m_rot.x, m_rot.x + deltaPitch);
+    }
+    if(deltaYaw)
+    {
+        anim->AnimateFloat(this, &m_rot.y, durationS, m_rot.y, m_rot.y + deltaYaw);
+    }
+    if(deltaRoll)
+    {
+        anim->AnimateFloat(this, &m_rot.z, durationS, m_rot.z, m_rot.z + deltaRoll);
+    }
+}
+
+void Node::AnimateDeltaScale(float deltaX, float deltaY, float deltaZ, float durationS)
+{
+    Animator *anim = Animator::GetInstance();
+
+    if(deltaX)
+    {
+        anim->AnimateFloat(this, &m_scale.x, durationS, m_scale.x, m_scale.x + deltaX);
+    }
+    if(deltaY)
+    {
+        anim->AnimateFloat(this, &m_scale.y, durationS, m_scale.y, m_scale.y + deltaY);
+    }
+    if(deltaZ)
+    {
+        anim->AnimateFloat(this, &m_scale.z, durationS, m_scale.z, m_scale.z + deltaZ);
+    }
+}
+
+void Node::AnimateDeltaOpacity(float deltaOpacity, float durationS)
+{
+
 }

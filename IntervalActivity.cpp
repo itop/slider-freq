@@ -5,6 +5,7 @@
 #include "Mesh.h"
 
 #define TOLERANCE 2.0f
+#define ANIM_TIME 3.0
 
 IntervalActivity::IntervalActivity(MainApp *pApp, float startNote, float keyNote) : 
     Activity(pApp), 
@@ -90,9 +91,10 @@ IntervalActivity::IntervalActivity(MainApp *pApp, float startNote, float keyNote
     m_pRootNode->AddChild(m_pFreqSlider);
     m_pRootNode->AddChild(m_pIntervalButton);
 
-    m_pFreqSlider->SetPosition(250, 0, 0);
-    m_pFreqSlider->SetRotation(0, -60, 0);
-    m_pIntervalButton->SetPosition(0, 100, 0);
+    m_pFreqSlider->SetPosition(-500, 0, 0);
+    m_pFreqSlider->SetScale(1.0, 0.0, 1.0);
+    m_pIntervalButton->SetPosition(0, -400, 0);
+    m_pIntervalButton->SetScale(0.0, 0.0, 0.0);
 }
 
 IntervalActivity::~IntervalActivity()
@@ -101,13 +103,25 @@ IntervalActivity::~IntervalActivity()
 void IntervalActivity::OnActivityStart()
 {
     //Set up
-    //\todo Animate elements in
+    //Animate elements in
+    m_pIntervalButton->AnimateDeltaPosition(0, 500, 0, ANIM_TIME);
+    m_pIntervalButton->AnimateDeltaRotation(720, 0, 0, ANIM_TIME);
+    m_pIntervalButton->AnimateDeltaScale(1.0, 1.0, 1.0, ANIM_TIME);
+    m_pFreqSlider->AnimateDeltaRotation(0, -420, 0, ANIM_TIME);
+    m_pFreqSlider->AnimateDeltaPosition(750, 0, 0, ANIM_TIME);
+    m_pFreqSlider->AnimateDeltaScale(0.0, 1.0, 0.0, ANIM_TIME);
 }
 
 void IntervalActivity::OnActivityEnd()
 {
     //Teardown
-    //\todo Animate elements out
+    //Animate elements out
+    m_pIntervalButton->AnimateDeltaPosition(0, -500, 0, ANIM_TIME);
+    m_pIntervalButton->AnimateDeltaRotation(-720, 0, 0, ANIM_TIME);
+    m_pIntervalButton->AnimateDeltaScale(-1.0, -1.0, -1.0, ANIM_TIME);
+    m_pFreqSlider->AnimateDeltaRotation(0, 420, 0, ANIM_TIME);
+    m_pFreqSlider->AnimateDeltaPosition(-750, 0, 0, ANIM_TIME);
+    m_pFreqSlider->AnimateDeltaScale(0.0, -1.0, 0.0, ANIM_TIME);
 }
 
 void IntervalActivity::OnButtonPressed(Button *pButton)

@@ -5,12 +5,13 @@
 #include <vector>
 
 #include "AABB.h"
+#include "Animations.h"
 
 //Forward declaration
 class MainApp;
 class Mesh;
 
-class Node {
+class Node : public Animatable {
 public:
 
     struct HitData {
@@ -30,15 +31,18 @@ public:
 
     void SetPosition(glm::vec3 pos);
     void SetPosition(float x, float y, float z);
+    void AnimateDeltaPosition(float deltaX, float deltaY, float deltaZ, float durationS);
 
     void SetMesh(Mesh *pMesh);
     
     void SetRotation(glm::vec3 rot);
     //In degrees
-    void SetRotation(float x, float y, float z);
+    void SetRotation(float pitch, float yaw, float roll);
+    void AnimateDeltaRotation(float deltaPitch, float deltaYaw, float deltaRoll, float durationS);
 
     void SetScale(glm::vec3 scale);
     void SetScale(float x, float y, float z);
+    void AnimateDeltaScale(float deltaX, float deltaY, float deltaZ, float durationS);
 
     void RegisterIntoList(MainApp *app);
 
@@ -51,10 +55,15 @@ public:
     //Update() is called every frame
     virtual void Update();
 
+    //From Animatable
+    virtual void OnAnimationComplete();
+    virtual void OnAnimationUpdated();
+
     Node* GetParent();
 
     void SetColor(float r, float g, float b);
     void SetOpacity(float opacity);
+    void AnimateDeltaOpacity(float deltaOpacity, float durationS);
 
     glm::vec3 GetColor();
     void GetColor(float &r, float &g, float &b);
