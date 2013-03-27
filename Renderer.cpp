@@ -21,7 +21,7 @@ const char waveFragmentShader[] =
     "uniform float time;                                \n"
     "varying vec2 vTexCoord;                            \n"
     "void main() {                                      \n"
-    "   float waveVal = texture1D(waveTex, vTexCoord.x);\n"
+    "   float waveVal = texture1D(waveTex, vTexCoord.x).r;\n"
     "   waveVal = waveVal*2.0 - 1.0;                    \n"
     "   float myY = vTexCoord.y*4.0 - 2.0;              \n"
     "   float yDiff = max(1.0 - abs(myY - waveVal), 0.0);  \n"
