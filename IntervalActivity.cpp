@@ -145,6 +145,7 @@ void IntervalActivity::OnSliderReleased(Slider *pSlider)
         if(abs(value - m_fKeyNote) < TOLERANCE)
         {
             m_pFreqSlider->SetColor(0.0,1.0,0.0);
+			OnActivityEnd();
         }
     }
 }
