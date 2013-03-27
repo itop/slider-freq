@@ -91,7 +91,7 @@ void MainApp::Init()
     m_pSoundGen->PrepareDevice();
 
     //Interval activity
-    m_pCurrentActivity = new IntervalActivity(this, 220, 293.665);
+	m_pCurrentActivity = new IntervalActivity(this, Notes::A4, Notes::D5);
     m_pSceneTree = m_pCurrentActivity->GetRootNode();
 
     //Start the activity
